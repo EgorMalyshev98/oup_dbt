@@ -1,6 +1,6 @@
 WITH RECURSIVE cte_dates AS (
     SELECT
-    "index", -- noqa: LT02
+    "index" as gant_index,
     "Code" AS code,
     "Start" AS start_date,
     "Fin" AS end_date,
@@ -16,7 +16,7 @@ WITH RECURSIVE cte_dates AS (
   UNION ALL
   
   SELECT
-  	"index",
+  	gant_index,
     code,
     start_date + INTERVAL '1 MONTH',
     end_date,
@@ -33,7 +33,7 @@ WITH RECURSIVE cte_dates AS (
 
 
 tmp_dates AS (SELECT
-	  "index",
+	  gant_index,
     code,
     start_date,
     end_date,
@@ -60,7 +60,7 @@ FROM cte_dates),
 
 
  tmp_2 AS (SELECT
- 	  "index",
+ 	  gant_index,
     code,
     start_date,
     end_date,
@@ -75,7 +75,7 @@ FROM cte_dates),
 FROM tmp_dates)
 
 SELECT
-	t."index",
+	t.gant_index,
 	t.code,
   t.vol,
   t.start_year,
@@ -92,8 +92,10 @@ SELECT
   r."SNT_Knstr",
   r."SNT_KnstrE",
   r."SNT_Obj"
+
 FROM tmp_2 t
 	
 JOIN {{source('spider', 'raw_spider__gandoper')}} r 
-ON t."index" = r."index" AND t.code = r."Code" AND t.project_type = r.project_type
 
+{# to do: уникальный индекс в таблице исходных данных #}
+ON t.gant_index = r."index" AND t.code = r."Code" AND t.project_type = r.project_type
