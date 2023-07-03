@@ -1,0 +1,16 @@
+version: 2
+
+sources:
+  - name: spider
+    schema: public
+    database: oup
+    tables:
+      - name: raw_spider__gandoper
+      - name: raw_spider__archive
+      - name: raw_spider__assign
+      - name: raw_spider__cost
+      - name: raw_spider__ganttmat
+      - name: raw_spider__mult
+      - name: raw_spider__periodmat
+      - name: raw_spider__periodres
+      - name: raw_spider__res
