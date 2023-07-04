@@ -14,32 +14,43 @@ WITH tmp as (
         smr_sp,
         object,
         smr_type
-        {# "Name",
-        "Ispol",
-        "IspolUch", 
-        "Real",
-        "SNT_Knstr",
-        "SNT_KnstrE",
-        "SNT_Obj" #}
+
     FROM {{ ref('int__gant_by_month') }}
 
         UNION ALL
 
     SELECT
-        code,
-        start_year,
-        start_month,
-        smr_ss,
-        smr_sp,
-        object,
-        smr_type
-        
-        
-    FROM {{ ref('int__archive_by_month') }}
-    
-    )
 
-SELECT * FROM tmp
+        a.code,
+        a.start_year,
+        a.start_month,
+        a.smr_ss,
+        a.smr_sp,
+        a.object,
+        a.smr_type
+
+    FROM {{ ref('int__archive_by_month') }} a
+    
+    ),
+
+final as (
+    SELECT t.*,
+
+        g."Name",
+        g."Ispol",
+        g."IspolUch", 
+        g."Real",
+        g."SNT_Knstr",
+        g."SNT_KnstrE",
+        g."SNT_Obj"
+
+    FROM tmp t
+        JOIN {{ source('spider', 'raw_spider__gandoper') }} g
+        ON t.code = g."Code" and t.object = g.object and g.project_type = 'проект'
+
+)
+
+SELECT * FROM final
 
 
     
