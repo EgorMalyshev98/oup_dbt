@@ -14,3 +14,8 @@ sources:
       - name: raw_spider__periodmat
       - name: raw_spider__periodres
       - name: raw_spider__res
+  - name: dicts
+    schema: public
+    database: oup
+    tables:
+      - name: dict__rus_months
