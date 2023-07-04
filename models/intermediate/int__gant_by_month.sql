@@ -80,12 +80,13 @@ SELECT
   t.vol,
   t.start_year,
   t.start_month,
-  t.weight,
-    
+  'план' as smr_type,
   --доп поля
+
+  r."object",
   r."Name", 
-  r."c_pln_SMRSsI",
-  r."c_pln_SMRSpI",
+  weight * r."c_pln_SMRSsI" as smr_ss,
+  weight * r."c_pln_SMRSpI" as smr_sp,
   r."Ispol",
   r."IspolUch", 
   r."Real",

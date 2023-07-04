@@ -78,10 +78,11 @@ final as (SELECT
     t.code,
     t.start_year,
     t.start_month,
+    'факт' as smr_type,
 
     {# дополнительные поля #}
     r."object",
-    sum(weight * r."WorkLoadFact") as workload,
+    {# sum(weight * r."WorkLoadFact") as workload, #}
     sum(weight * r."c_aac_SMRSsI") as smr_ss,
     sum(weight * r."c_aac_SMRSpI") as smr_sp
     
