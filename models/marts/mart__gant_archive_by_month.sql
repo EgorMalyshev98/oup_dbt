@@ -36,6 +36,11 @@ WITH tmp as (
 final as (
     SELECT t.*,
 
+        CASE
+            WHEN length(CAST(start_month AS TEXT)) = 2 THEN CAST(start_month AS TEXT)
+            ELSE CONCAT('0', CAST(t.start_month AS TEXT))::text
+        END AS s_month,
+
         g."Name",
         g."Ispol",
         g."IspolUch", 
@@ -47,7 +52,6 @@ final as (
     FROM tmp t
         JOIN {{ source('spider', 'raw_spider__gandoper') }} g
         ON t.code = g."Code" and t.object = g.object and g.project_type = 'проект'
-
 )
 
 SELECT * FROM final
