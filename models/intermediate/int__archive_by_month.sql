@@ -1,3 +1,12 @@
+{{
+  config(
+    materialized = 'table',
+    indexes=[
+      {'columns': ['code'], 'type': 'hash'}]
+    )
+}}
+
+
 WITH RECURSIVE tmp1 AS 
 (SELECT 
 	"index" AS archive_index,
@@ -85,7 +94,6 @@ final as (SELECT
     {# sum(weight * r."WorkLoadFact") as workload, #}
     sum(weight * r."c_aac_SMRSsI") as smr_ss,
     sum(weight * r."c_aac_SMRSpI") as smr_sp
-    
 
 FROM tmp3 t
 

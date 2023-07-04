@@ -1,3 +1,13 @@
+{{
+  config(
+    materialized = 'table',
+    indexes=[
+      {'columns': ['code'], 'type': 'hash'}]
+    )
+}}
+
+
+
 WITH RECURSIVE cte_dates AS (
     SELECT
     "index" as gant_index,
