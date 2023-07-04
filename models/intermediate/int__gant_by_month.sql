@@ -12,11 +12,16 @@ WITH RECURSIVE cte_dates AS (
     SELECT
     "index" as gant_index,
     "Code" AS code,
-    "Start" AS start_date,
+    (SELECT max("Start")
+    from {{ source('spider', 'raw_spider__archive') }}) AS start_date,
     "Fin" AS end_date,
     "VolPlan" AS vol,
-    EXTRACT(YEAR FROM "Start") AS start_year,
-    EXTRACT(MONTH FROM "Start") AS start_month,
+    EXTRACT(YEAR FROM     
+      (SELECT max("Start")
+      from {{ source('spider', 'raw_spider__archive') }})) AS start_year,
+    EXTRACT(MONTH FROM     
+      (SELECT max("Start")
+      from {{ source('spider', 'raw_spider__archive') }})) AS start_month,
     project_type,
     "object" 
     
