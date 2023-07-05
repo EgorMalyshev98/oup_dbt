@@ -3,11 +3,7 @@ WITH tmp as (SELECT
     "Code" as code,
     "DurPlanD" as dur_plan_d,
     "Start",
-    CASE
-        WHEN date_part('day', "Fin") = 1 
-            THEN "Fin" - INTERVAL '1 day'
-        ELSE "Fin" 
-    END AS end_date,
+    "Fin" as end_date,
     "VolPlan" AS vol,
     project_type,
     "object" 
@@ -21,8 +17,18 @@ tmp2 AS (
     SELECT
         t.*,
         CASE
-            WHEN dur_plan_d IS NULL THEN end_date
-            ELSE end_date - (INTERVAL '1 day' * round(dur_plan_d))
+        WHEN dur_plan_d IS NULL THEN end_date
+        ELSE 
+            CASE
+            WHEN  date_part('day', (date_trunc('month', end_date) + interval '1 month' - interval '1 day')) >= round(dur_plan_d)
+                THEN
+                    CASE 
+                    WHEN date_part('day', end_date) <= round(dur_plan_d)
+                        THEN end_date - (INTERVAL '1 day' * floor(dur_plan_d))
+                        ELSE end_date - (INTERVAL '1 day' * round(dur_plan_d))
+                    END
+                ELSE end_date - (INTERVAL '1 day' * round(dur_plan_d))
+            END
         END as start_date
 
 FROM tmp t)
