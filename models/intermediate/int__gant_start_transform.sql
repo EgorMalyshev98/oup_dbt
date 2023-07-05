@@ -12,7 +12,8 @@ WITH tmp as (SELECT
     project_type,
     "object" 
     
-  FROM {{source('spider', 'raw_spider__gandoper')}} ),
+  FROM {{source('spider', 'raw_spider__gandoper')}} 
+  WHERE project_type = 'проект' AND "Start" IS NOT NULL AND "VolPlan" IS NOT NULL),
 
 
 tmp2 AS (
@@ -20,7 +21,7 @@ tmp2 AS (
     SELECT
         t.*,
         CASE
-            WHEN dur_plan_d is NULL THEN end_date
+            WHEN dur_plan_d IS NULL THEN end_date
             ELSE end_date - (INTERVAL '1 day' * round(dur_plan_d))
         END as start_date
 
