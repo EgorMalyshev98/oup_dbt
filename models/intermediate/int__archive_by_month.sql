@@ -12,7 +12,11 @@ WITH RECURSIVE tmp1 AS
 	"index" AS archive_index,
 	"OperCode" AS code, 
 	"Start" AS start_date,
-	"Fin" AS end_date,
+    CASE
+        WHEN date_part('day', "Fin") = 1 
+            THEN "Fin" - INTERVAL '1 day'
+            ELSE "Fin" 
+    END AS end_date,
 	"Vol" AS vol,
 	EXTRACT(YEAR FROM "Start") AS start_year,
     EXTRACT(MONTH FROM "Start") AS start_month,
