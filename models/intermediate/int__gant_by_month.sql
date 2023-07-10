@@ -75,7 +75,7 @@ FROM cte_dates),
     start_year,
     start_month,
     num_days,
-    num_days/sum(num_days) OVER (PARTITION BY code) AS weight
+    num_days/sum(num_days) OVER (PARTITION BY code, gant_index) AS weight
 
 FROM tmp_dates)
 
@@ -88,15 +88,8 @@ SELECT
   --доп поля
 
   r."object",
-  r."Name", 
   weight * r."c_pln_SMRSsI" as smr_ss,
-  weight * r."c_pln_SMRSpI" as smr_sp,
-  r."Ispol",
-  r."IspolUch", 
-  r."Real",
-  r."SNT_Knstr",
-  r."SNT_KnstrE",
-  r."SNT_Obj"
+  weight * r."c_pln_SMRSpI" as smr_sp
 
 FROM tmp_2 t
 	

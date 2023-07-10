@@ -22,8 +22,12 @@ SELECT
         ELSE 
         CASE
             WHEN 
-                date_trunc('day', date_trunc('month', end_date - (INTERVAL '1 day' * floor(dur_plan_d))) + INTERVAL '1 month' - INTERVAL '1 day') 
-                    = date_trunc('day', end_date - (INTERVAL '1 day' * floor(dur_plan_d)))
+                {#  Расчет даты начала операции в плане:
+                    если расчетная дата(окончание - длительность в днях) попадает на послдений день месяца,
+                    то сдвигаем дату начала на первый день следующего месяца #}
+
+                date_trunc('day', date_trunc('month', end_date - (INTERVAL '1 day' * floor(dur_plan_d))) + INTERVAL '1 month' - INTERVAL '1 day') -- последний день в месяце даты начала
+                    = date_trunc('day', end_date - (INTERVAL '1 day' * floor(dur_plan_d))) -- день даты начала
             THEN end_date - (INTERVAL '1 day' * floor(dur_plan_d)) + INTERVAL '1 day'
             ELSE end_date - (INTERVAL '1 day' * floor(dur_plan_d))
         END
