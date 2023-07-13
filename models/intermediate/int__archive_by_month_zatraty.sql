@@ -96,11 +96,12 @@ final as (SELECT
     {# дополнительные поля #}
     r."object",
     {# sum(weight * r."WorkLoadFact") as workload, #} 
+    round(sum(weight * (coalesce(r."c_aac_SMRSsI", 0) + coalesce(r."c_aac_SMRSpI", 0)))) as "SMRFull",
     round(sum(weight * ( - coalesce(r."c_aac_AmLiz", 0) - coalesce(r."c_aac_FnOpTr", 0) - coalesce(r."c_aac_FuelMiM", 0) - coalesce(r."c_aac_Materl", 0) - coalesce(r."c_aac_OplGpd", 0) - coalesce(r."c_aac_OpSbRb", 0) - coalesce(r."c_aac_PrMatl", 0) - coalesce(r."c_aac_ProZtr", 0) - coalesce(r."c_aac_St_Mex", 0) - coalesce(r."c_aac_StrVzn", 0) - coalesce(r."c_aac_UslStH", 0) - coalesce(r."c_aac_RepMiM", 0) - coalesce(r."c_aac_NkRuch", 0)
-))) as ZATRATY,
+))) as "ZATRATY",
     round(sum(weight * ( - coalesce(r."c_aac_AmLiz", 0) - coalesce(r."c_aac_FnOpTr", 0) - coalesce(r."c_aac_FuelMiM", 0) - coalesce(r."c_aac_Materl", 0) - coalesce(r."c_aac_OplGpd", 0) - coalesce(r."c_aac_OpSbRb", 0) - coalesce(r."c_aac_PrMatl", 0) - coalesce(r."c_aac_ProZtr", 0) - coalesce(r."c_aac_St_Mex", 0) - coalesce(r."c_aac_StrVzn", 0) - coalesce(r."c_aac_UslStH", 0) - coalesce(r."c_aac_RepMiM", 0) - coalesce(r."c_aac_NkRuch", 0) + coalesce(r."c_aac_SMRSpI", 0) + coalesce(r."c_aac_SMRSsI", 0) + coalesce(r."c_aac_UslGpd", 0)
-))) as PRIBYL,
-    round(sum(weight * (coalesce(r."c_aac_SMRSsI", 0) + coalesce(r."c_aac_SMRSpI", 0)))) as SMRFull
+))) as "PRIBYL"
+    
     
 FROM tmp3 t
 
@@ -120,5 +121,5 @@ GROUP BY
 
 {# оставляем только ключевые значения #}
 SELECT * FROM final
-WHERE ZATRATY IS NOT NULL or PRIBYL is not null or SMRFull is not null
+WHERE "ZATRATY" IS NOT NULL or "PRIBYL" is not null or "SMRFull" is not null
 
