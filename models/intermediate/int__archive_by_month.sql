@@ -91,7 +91,7 @@ final as (SELECT
     t.code,
     t.start_year,
     t.start_month,
-    'факт' as ZATRATY_type,
+    'факт' as smr_type,
 
     {# дополнительные поля #}
     r."object",
