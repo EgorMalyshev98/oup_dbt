@@ -7,10 +7,25 @@
 WITH tmp as (
 
     SELECT
+        code,
+        start_year,
+        start_month, 
+        "object",
+        smr_type,
+        "ZATRATY",
+        "PRIBYL",
+        "SMRFull"
+
+    FROM {{ ref('int__gant_by_month') }}
+
+        UNION ALL
+
+    SELECT
         t1."code",
         t1."start_year",
         t1."start_month",
         t1."object",
+        t1.smr_type,
         t1."ZATRATY",
         t1."PRIBYL",
         t1."SMRFull"
@@ -34,14 +49,19 @@ final as (
         g."Real",
         g."SNT_Knstr",
         g."SNT_KnstrE",
-        g."SNT_Obj"
+        g."SNT_Obj",
+
+        case 
+            when g."SNT_Knstr" = 'Земляное полотно' then 'Земляное полотно'
+            when g."SNT_Knstr" = 'Дорожная одежда' then 'Дорожная одежда'
+            ELSE 'Прочие работы'
+
+        end as Конструктив
+
 
     FROM tmp t
         JOIN {{ source('spider', 'raw_spider__gandoper') }} g
         ON t.code = g."Code" and t.object = g.object and g.project_type = 'проект'
 )
 
-SELECT * FROM final
-
-
-    
+SELECT * FROM final  
