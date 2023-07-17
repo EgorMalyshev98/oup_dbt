@@ -88,8 +88,12 @@ SELECT
   --доп поля
 
   r."object",
-  weight * r."c_pln_SMRSsI" as smr_ss,
-  weight * r."c_pln_SMRSpI" as smr_sp
+  
+  round((weight * (coalesce(r."c_pln_SMRSsI", 0) + coalesce(r."c_pln_SMRSpI", 0)))) as "SMRFull",
+  round((weight * ( - coalesce(r."c_pln_AmLiz", 0) - coalesce(r."c_pln_FnOpTr", 0) - coalesce(r."c_pln_FuelMiM", 0) - coalesce(r."c_pln_Materl", 0) - coalesce(r."c_pln_OplGpd", 0) - coalesce(r."c_pln_OpSbRb", 0) - coalesce(r."c_pln_PrMatl", 0) - coalesce(r."c_pln_ProZtr", 0) - coalesce(r."c_pln_St_Mex", 0) - coalesce(r."c_pln_StrVzn", 0) - coalesce(r."c_pln_UslStH", 0) - coalesce(r."c_pln_RepMiM", 0) - coalesce(r."c_pln_NkRuch", 0)
+))) as "ZATRATY",
+  round((weight * ( - coalesce(r."c_pln_AmLiz", 0) - coalesce(r."c_pln_FnOpTr", 0) - coalesce(r."c_pln_FuelMiM", 0) - coalesce(r."c_pln_Materl", 0) - coalesce(r."c_pln_OplGpd", 0) - coalesce(r."c_pln_OpSbRb", 0) - coalesce(r."c_pln_PrMatl", 0) - coalesce(r."c_pln_ProZtr", 0) - coalesce(r."c_pln_St_Mex", 0) - coalesce(r."c_pln_StrVzn", 0) - coalesce(r."c_pln_UslStH", 0) - coalesce(r."c_pln_RepMiM", 0) - coalesce(r."c_pln_NkRuch", 0) + coalesce(r."c_pln_SMRSpI", 0) + coalesce(r."c_pln_SMRSsI", 0) + coalesce(r."c_pln_UslGpd", 0)
+))) as "PRIBYL"
 
 FROM tmp_2 t
 	
