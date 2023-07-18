@@ -30,7 +30,7 @@ WITH tmp as (
         t1."PRIBYL",
         t1."SMRFull"
 
-    FROM {{ ref('int__archive_by_month_zatraty') }} t1
+    FROM {{ ref('int__archive_by_month') }} t1
     
     ),
 
