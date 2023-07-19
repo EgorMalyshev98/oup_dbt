@@ -92,6 +92,8 @@ final as (SELECT
     t.start_year,
     t.start_month,
     'факт' as smr_type,
+    sum(weight * r."c_aac_SMRSsI") as smr_ss,
+    sum(weight * r."c_aac_SMRSpI") as smr_sp,
 
     {# дополнительные поля #}
     r."object",
