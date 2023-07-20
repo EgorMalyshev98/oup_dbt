@@ -58,6 +58,12 @@ final as (
         g."SNT_Obj",
         g."Num_Con",
 
+        case
+            when t.smr_ss is not null then 'Собственными силами'
+            when t.smr_sp is not null then 'Силами субподрядных организаций'
+            else ''
+        end as "Силы реализации",
+
         case 
             when g."SNT_Knstr" = 'Земляное полотно' then 'Земляное полотно'
             when g."SNT_Knstr" = 'Дорожная одежда' then 'Дорожная одежда'
@@ -71,12 +77,12 @@ final as (
 
     FROM tmp t
         JOIN {{ source('spider', 'raw_spider__gandoper') }} g
-        ON t.code = g."Code" and t.object = g.object and g.project_type = 'проект'
+        ON t.code = g."Code" and t."object" = g."object" and g.project_type = 'проект'
 
 {# (ниже) объединение ВДЦ Дюртюли-Ачит с остальными данными #}
 
-        join {{source('excel', 'raw_excel__vdc_ad108')}} vdc
-        on g."Num_Con" = vdc."№ п/п" and t.object = vdc.object
+        left join {{source('excel', 'raw_excel__vdc_ad108')}} vdc
+        on g."Num_Con" = vdc."№ п/п" and g."object" = vdc."object"
 )
 
 SELECT * FROM final  
