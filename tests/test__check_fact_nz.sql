@@ -23,7 +23,7 @@ from (
             when sum("s_act_CC_SMRFull") != 0 then 'Фактические значения в НЗ'
             else ''
         end status
-    from raw_spider__gandoper g 
+    from {{source('spider','raw_spider__gandoper')}}  g 
     where project_type = 'НЗ'
     group by 
         object,

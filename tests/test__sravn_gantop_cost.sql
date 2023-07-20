@@ -39,7 +39,7 @@ from (
             sum("s_act_CC_SMRSsI") + sum("s_act_CC_SMRSpI") as "СТОИМОСТЬ проекта [Факт]", --СТОИМОСТЬ проекта [Факт]
             sum("s_pln_CC_SMRSsI") + sum("s_pln_CC_SMRSpI") as "СТОИМОСТЬ проекта [План]" --СТОИМОСТЬ проекта [План]
         
-        from raw_spider__gandoper g
+        from {{source('spider','raw_spider__gandoper')}} g
         group by 
             "object",
             nz_year,
@@ -57,7 +57,7 @@ from (
         sum("f_act_Total") as "Всего [Факт]", --Всего [Факт]
         sum("f_pln_Total") as "Всего [План]" --Всего [План]
 	
-	from raw_spider__cost rsc 
+	from {{source('spider','raw_spider__cost')}} rsc 
 	where "Code" = 'SMRSsI' or "Code" = 'SMRSpI' 
 	group by 
 	

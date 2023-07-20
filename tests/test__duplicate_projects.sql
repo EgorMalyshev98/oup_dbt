@@ -18,7 +18,7 @@ from (
             when count(concat("nz_year", "nz_month", "project_type", "Code")) >1 then 'ДУБЛИРОВАНИЕ'
             else ''
         end status 
-    from raw_spider__gandoper g 
+    from {{source('spider','raw_spider__gandoper')}} g 
     group by 
         "object",
         nz_year,
