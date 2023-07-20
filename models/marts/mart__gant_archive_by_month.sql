@@ -63,12 +63,20 @@ final as (
             when g."SNT_Knstr" = 'Дорожная одежда' then 'Дорожная одежда'
             ELSE 'Прочие работы'
 
-        end as "Конструктив"
+        end as "Конструктив",
+
+        vdc."Наименование работ и затрат",
+        replace(vdc."Стоимость в текущих, руб. без НДС", ' ', '') as "СМР П"
 
 
     FROM tmp t
         JOIN {{ source('spider', 'raw_spider__gandoper') }} g
         ON t.code = g."Code" and t.object = g.object and g.project_type = 'проект'
+
+{# (ниже) объединение ВДЦ Дюртюли-Ачит с остальными данными #}
+
+        join {{source('excel', 'raw_excel__vdc_ad108')}} vdc
+        on g."Num_Con" = vdc."№ п/п" and t.object = vdc.object
 )
 
 SELECT * FROM final  
