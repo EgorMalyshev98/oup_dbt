@@ -19,3 +19,9 @@ sources:
     database: oup
     tables:
       - name: dict__rus_months
+  - name: excel
+    schema: public
+    database: oup
+    tables:
+      - name: raw_excel__vdc_ad108
+
