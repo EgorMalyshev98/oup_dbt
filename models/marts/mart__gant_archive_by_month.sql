@@ -72,7 +72,7 @@ final as (
         end as "Конструктив",
 
         vdc."Наименование работ и затрат",
-        replace(vdc."Стоимость в текущих, руб. без НДС", ' ', '') as "СМР П"
+        replace(vdc."Стоимость работ, руб. без НДС", ' ', '') as "СМР П"
 
 
     FROM tmp t
@@ -82,7 +82,7 @@ final as (
 {# (ниже) объединение ВДЦ Дюртюли-Ачит с остальными данными #}
 
         left join {{source('excel', 'raw_excel__vdc_ad108')}} vdc
-        on g."Num_Con" = vdc."№ п/п" and g."object" = vdc."object"
+        on g."Num_Con" = vdc."Шифр единичной расценки" and g."object" = vdc."object"
 )
 
-SELECT * FROM final  
+SELECT * FROM final
