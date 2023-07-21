@@ -50,19 +50,29 @@ final as (
 
         g."Name",
         g."Ispol",
-        g."IspolUch", 
-        g."Real",
+        g."IspolUch",
+/*Временная мера для избавления от недопустимых значений поля Real*/
+        case g."Real" 
+            when null then null
+            when 'Собственные силы' then 'Собственными силами'
+            when 'Собственными силами' then 'Собственными силами'
+            when 'Субподряд' then 'Силами субподрядных организаций'
+            when 'Силами субподрядных организаций' then 'Силами субподрядных организаций'
+            else null
+        end as "Силы реализации",
+
+        {# g."Real", #}
         g."SNT_Knstr",
         g."SNT_KnstrE",
         g."SNT_TypeKnstrE",
         g."SNT_Obj",
         g."Num_Con",
 
-        case
+        {# case
             when t.smr_ss is not null then 'Собственными силами'
             when t.smr_sp is not null then 'Силами субподрядных организаций'
             else ''
-        end as "Силы реализации",
+        end as "Силы реализации", #}
 
         case 
             when g."SNT_Knstr" = 'Земляное полотно' then 'Земляное полотно'
