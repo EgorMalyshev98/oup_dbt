@@ -9,8 +9,8 @@ WITH tmp as (SELECT
     "object" 
     
   FROM {{source('spider', 'raw_spider__gandoper')}} 
-  WHERE project_type = 'проект' AND "Start" IS NOT NULL AND "VolPlan" IS NOT NULL),
-
+  WHERE project_type = 'проект' AND "Start" IS NOT NULL AND "VolPlan" IS NOT NULL and "Fin" is not null),
+{# Добавлено условие <"Fin" is not null>, чтобы избавиться от операций связанных с переключателем #}
 
 tmp2 AS (
 
