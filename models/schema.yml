@@ -24,4 +24,11 @@ sources:
     database: oup
     tables:
       - name: raw_excel__vdc_ad108
+      - name: raw_excel__vdc_ad069
+      - name: raw_excel__vdc_ad069_1
+      - name: raw_excel__vdc_ad095
+      - name: raw_excel__vdc_ad080
+      - name: raw_excel__vdc_ad101
+      - name: raw_excel__vdc_ad076
+      - name: raw_excel__vdc_ad089
 
