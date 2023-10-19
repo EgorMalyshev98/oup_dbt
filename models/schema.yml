@@ -31,4 +31,10 @@ sources:
       - name: raw_excel__vdc_ad101
       - name: raw_excel__vdc_ad076
       - name: raw_excel__vdc_ad089
-
+models:
+ - name: int__vdc_by_objects
+   columns: 
+    - name: unique_test
+      tests: 
+        - unique 
+        - not_null
