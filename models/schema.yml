@@ -148,7 +148,7 @@ models:
      - name: IspolUch
        description: Исполнитель [Строительные участки]
      - name: Силы реализации
-       description: 
+       description: Пользовательское поле 
      - name: SNT_Knstr
        description: Конструктив
      - name: SNT_KnstrE
@@ -160,4 +160,4 @@ models:
      - name: Num_Con
        description: № п/п по контрактной ведомости
      - name: Конструктив
-       description: Земляное полотно/Дорожная одежда/Прочие работы
+       description: Земляное полотно, Дорожная одежда и Прочие работы
