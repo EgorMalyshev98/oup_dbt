@@ -5,7 +5,7 @@
 with t1 as (
             --1 шаг Ненормируемые работы из таблицы '1_c__technique_workers'
             select
-                don.territory_name_spider_project as "object",
+                don.spider_name as "object",
 --                cw.zhufvr_id,
                 ctw.work_id,
                 cw.type_work_name as    "Вид работ",
@@ -35,13 +35,13 @@ with t1 as (
                             where ctw.work_id = cnw.work_id)
                   --фильтр ниже убирает удаленные и непроведенные ЖУФВР-ы
                   and (czh.delete_flag is false and czh.is_done is true)
-                  and don.territory_name_spider_project != 'NULL'
+                  and don.spider_name is not null
 
-            union
+            union all 
 
             --2 шаг Нормируемые работы из таблицы '1_c__norm_workload'
             SELECT 
-                    don.territory_name_spider_project as "object",
+                    don.spider_name as "object",
 --                    cw.zhufvr_id,                    
                     cnw.work_id,
                     cw.type_work_name as    "Вид работ",
@@ -61,7 +61,7 @@ with t1 as (
                 left join {{ source('dicts', 'dict__1c_objects_to_spider') }} don on czh.territory_value = don.territory_value
                 --фильтр ниже убирает удаленные и непроведенные ЖУФВР-ы
                 where (czh.delete_flag is false and czh.is_done is true)
-                and don.territory_name_spider_project != 'NULL'
+                and don.spider_name is not null
 
 )
 
@@ -78,7 +78,10 @@ select
     rsg."SNT_KnstrE" as "Конструктивный элемент",
     vdc."Позиция из КВ",
     czh.zhfvr_date as "Дата",
-    czh.work_shift_name as "Смена"
+    czh.work_shift_name as "Смена",
+    extract(year from czh.zhfvr_date)::int as "Год",
+    extract(month from czh.zhfvr_date)::int as "Месяц"
+
     {# case 
         when ctw.contragent_name = 'ТРАНССТРОЙМЕХАНИЗАЦИЯ ООО' then 'Собственная'::varchar(11)
         when ctw.contragent_name != 'ТРАНССТРОЙМЕХАНИЗАЦИЯ ООО' then 'Наемная'::varchar(11)
