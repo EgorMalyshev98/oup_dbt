@@ -3,17 +3,17 @@ version: 2
 sources:
   - name: spider
     description: Исходные данные проектов Spider Project. Названия колонок соответствуют кодам колонок из Spider Project
-    schema: public
+    schema: spider
     database: oup
     tables:
-      - name: raw_spider__gandoper
-        description: Гантт работ с конфигурацией api_gandoper.
       - name: raw_spider__archive
         description: Архив исполнения с конфигурацией api_archive.
       - name: raw_spider__assign
         description: Назначения с конфигурацией api_assign.
       - name: raw_spider__cost
         description: Стоимостные составляющие с конфигурацией api_cost.
+      - name: raw_spider__gandoper
+        description: Гантт работ с конфигурацией api_gandoper.
       - name: raw_spider__ganttmat
         description: Гантт материалов с конфигурацией api_ganttmat.
       - name: raw_spider__mult
