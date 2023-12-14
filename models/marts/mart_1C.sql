@@ -9,7 +9,9 @@ with t1 as (
 --                cw.zhufvr_id,
                 ctw.work_id,
                 cw.type_work_name as    "Вид работ",
+                cw.enrp_type as         "Тип ЕНРП",
                 ctw.res_name as         "Ресурс Spider",
+                ctw.res_code as         "Код ресурса",
                 ctw.hours as            "Фактическая трудоемкость",
                 case
                     when ctw.hours != 0 then ctw.hours
@@ -45,7 +47,9 @@ with t1 as (
 --                    cw.zhufvr_id,                    
                     cnw.work_id,
                     cw.type_work_name as    "Вид работ",
+                    cw.enrp_type as         "Тип ЕНРП",
                     cnw.res_spider_name as  "Ресурс Spider",
+                    cnw.res_spider_code as "Код ресурса",
                     cnw.fact_workload as    "Фактическая трудоемкость",
                     cnw.norm_workload as    "Нормативная трудоемкость",
                     true:: boolean as       "Нормируемая",
