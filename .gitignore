@@ -1,6 +1,9 @@
-
-target/
+venv
 dbt_packages/
 logs/
 test_kozuev
 oup_dbt.code-workspace
+.vscode
+
+target/*
+!target/manifest.json
