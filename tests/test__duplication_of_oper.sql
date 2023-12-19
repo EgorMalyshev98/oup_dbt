@@ -15,7 +15,7 @@ select
 	sum(coalesce(mgabm.smr_sp,0)) + sum(coalesce(mgabm.smr_ss,0)) as smr_full_mart
 from {{ source('spider', 'raw_spider__gandoper') }} pln
 
-inner join oup.public.mart__gant_archive_by_month mgabm on mgabm.code = pln."Code"
+inner join {{ ref("mart__gant_archive_by_month") }} mgabm on mgabm.code = pln."Code"
 
 where pln.project_type = 'проект' and mgabm.smr_type = 'план' 
 
@@ -49,7 +49,7 @@ select
 	sum(coalesce(mgabm.smr_sp,0)) + sum(coalesce(mgabm.smr_ss,0)) as smr_full_mart
 from {{ source('spider', 'raw_spider__archive') }} fct
 
-inner join oup.public.mart__gant_archive_by_month mgabm on mgabm.code = fct."OperCode"
+inner join {{ ref("mart__gant_archive_by_month") }} mgabm on mgabm.code = fct."OperCode"
 
 where fct.project_type = 'проект' and mgabm.smr_type = 'факт' and fct."ResCode" is not null
 
