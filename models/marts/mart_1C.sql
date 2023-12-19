@@ -71,6 +71,7 @@ with t1 as (
 
 select 
     t1.*,
+--    t1."Фактическая трудоемкость" / sum(t1."Фактическая трудоемкость") over (partition by DATE_TRUNC('day', czh.zhfvr_date), t1."Вид работ") as weight,
     cw.structure_unique_code,
 --    rsg."object_1",
 --    rsg."f_CodeIdent",
@@ -84,8 +85,11 @@ select
     czh.zhfvr_date as "Дата",
     czh.work_shift_name as "Смена",
     extract(year from czh.zhfvr_date)::int as "Год",
-    extract(month from czh.zhfvr_date)::int as "Месяц"
-
+    extract(month from czh.zhfvr_date)::int as "Месяц",
+    abs(t1."Фактическая трудоемкость" / t1."Нормативная трудоемкость" * 100 - 100) as "Недопустимый % отклонения",
+    case when skr."rescode" is null then false
+        else true
+    end ::boolean as "Ключевой ресурс"
     {# case 
         when ctw.contragent_name = 'ТРАНССТРОЙМЕХАНИЗАЦИЯ ООО' then 'Собственная'::varchar(11)
         when ctw.contragent_name != 'ТРАНССТРОЙМЕХАНИЗАЦИЯ ООО' then 'Наемная'::varchar(11)
@@ -97,10 +101,12 @@ from t1
 left join {{ source('1c', '1_c__works') }} cw using(work_id)
 --соединение с таблицей Гантт работ из спайдер
 left join {{ source('spider', 'raw_spider__gandoper') }} rsg on replace(cw.structure_unique_code,' ','') = rsg."f_CodeIdent" and t1."object" = rsg."object"
---соединени со сводной таблицей контрактных позиций
+--соединение со сводной таблицей контрактных позиций
 left join {{ ref('int__vdc_by_objects') }} vdc on rsg."Num_Con" = vdc."Шифр единичной расценки" and t1."object" = vdc."object"
---соединени с таблицей 1с ЖУФВР
+--соединение с таблицей 1с ЖУФВР
 left join {{ source('1c', '1_c__zhufvr') }} czh on cw.zhufvr_id = czh.link
+--соединение с таблицей 
+left join {{ source('dicts', 'dict__spider_key_res') }} skr on t1."Тип ЕНРП" = skr."f_opertype" and t1."Код ресурса" = skr."rescode"
 
 --фильтр ниже для выборки только целых проектов
 where rsg.project_type = 'проект'
