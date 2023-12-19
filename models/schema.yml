@@ -46,6 +46,8 @@ sources:
             description: название объекта в 1С
           - name: territory_name_spider_project
             description: название объекта в Spider Project
+      - name: dict__spider_key_res
+        description: справочник ключевых ресурсов на операциях
   - name: excel
     schema: public
     database: oup
