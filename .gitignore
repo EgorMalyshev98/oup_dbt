@@ -4,6 +4,7 @@ logs/
 test_kozuev
 oup_dbt.code-workspace
 .vscode
+.env
 
 target/*
 !target/manifest.json

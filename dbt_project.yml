@@ -9,6 +9,7 @@ config-version: 2
 # This setting configures which "profile" dbt uses for this project.
 profile: 'oup'
 
+
 # These configurations specify where dbt should look for different types of files.
 # The `model-paths` config, for example, states that models in this project can be
 # found in the "models/" directory. You probably won't need to change these!
@@ -23,6 +24,13 @@ clean-targets:         # directories to be removed by `dbt clean`
   - "target"
   - "dbt_packages"
 
+models:
+  +grants:  # In this case the + is not optional, you must include it for your project to parse.
+    select: ['superset', 'tsm_office']
+
+# snapshots:
+#   +grants:  # In this case the + is not optional, you must include it for your project to parse.
+#     select: ['superset', 'tsm_office']
 
 # Configuring models
 # Full documentation: https://docs.getdbt.com/docs/configuring-models
