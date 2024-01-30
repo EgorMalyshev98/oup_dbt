@@ -86,7 +86,7 @@ select
     czh.work_shift_name as "Смена",
     extract(year from czh.zhfvr_date)::int as "Год",
     extract(month from czh.zhfvr_date)::int as "Месяц",
-    abs(t1."Фактическая трудоемкость" / t1."Нормативная трудоемкость" * 100 - 100) as "Недопустимый % отклонения",
+    abs(round((t1."Фактическая трудоемкость" / t1."Нормативная трудоемкость" * 100 - 100), 2)) as "Недопустимый % отклонения",
     case when skr."rescode" is null then false
         else true
     end ::boolean as "Ключевой ресурс"
