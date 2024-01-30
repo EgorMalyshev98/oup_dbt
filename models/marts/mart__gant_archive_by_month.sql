@@ -16,7 +16,8 @@ WITH tmp as (
         smr_type,
         "ZATRATY",
         "PRIBYL",
-        "SMRFull"
+        "SMRFull",
+        "UslGpd"
 
     FROM {{ ref('int__gant_by_month') }}
 
@@ -32,7 +33,8 @@ WITH tmp as (
         t1.smr_type,
         t1."ZATRATY",
         t1."PRIBYL",
-        t1."SMRFull"
+        t1."SMRFull",
+        "UslGpd"
         
 
     FROM {{ ref('int__archive_by_month') }} t1

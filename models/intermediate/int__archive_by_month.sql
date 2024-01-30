@@ -102,7 +102,8 @@ final as (SELECT
     round(sum(weight * ( - coalesce(r."c_aac_AmLiz", 0) - coalesce(r."c_aac_FnOpTr", 0) - coalesce(r."c_aac_FuelMiM", 0) - coalesce(r."c_aac_Materl", 0) - coalesce(r."c_aac_OplGpd", 0) - coalesce(r."c_aac_OpSbRb", 0) - coalesce(r."c_aac_PrMatl", 0) - coalesce(r."c_aac_ProZtr", 0) - coalesce(r."c_aac_St_Mex", 0) - coalesce(r."c_aac_StrVzn", 0) - coalesce(r."c_aac_UslStH", 0) - coalesce(r."c_aac_RepMiM", 0) - coalesce(r."c_aac_NkRuch", 0)
 ))) as "ZATRATY",
     round(sum(weight * ( - coalesce(r."c_aac_AmLiz", 0) - coalesce(r."c_aac_FnOpTr", 0) - coalesce(r."c_aac_FuelMiM", 0) - coalesce(r."c_aac_Materl", 0) - coalesce(r."c_aac_OplGpd", 0) - coalesce(r."c_aac_OpSbRb", 0) - coalesce(r."c_aac_PrMatl", 0) - coalesce(r."c_aac_ProZtr", 0) - coalesce(r."c_aac_St_Mex", 0) - coalesce(r."c_aac_StrVzn", 0) - coalesce(r."c_aac_UslStH", 0) - coalesce(r."c_aac_RepMiM", 0) - coalesce(r."c_aac_NkRuch", 0) + coalesce(r."c_aac_SMRSpI", 0) + coalesce(r."c_aac_SMRSsI", 0) + coalesce(r."c_aac_UslGpd", 0)
-))) as "PRIBYL"
+))) as "PRIBYL",
+round(sum(weight * (coalesce(r."c_aac_UslGpd", 0)))) as "UslGpd"
     
     
 FROM tmp3 t
