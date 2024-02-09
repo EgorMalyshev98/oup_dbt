@@ -6,16 +6,18 @@
     )
 }}
 
+{# 
+  Разбивка операции по месяцам. 
+  Увелечиение даты начала операции рекурсивной функцией на 1 месяц, 
+  пока месяц начала операции не будет равен месяцу окночания.
+#}
 
-
-WITH RECURSIVE cte_dates AS (
+WITH RECURSIVE cte AS (
     SELECT
     gant_index,
     code,
     start_date,
     end_date,
-    start_year,
-    start_month,
     project_type,
     "object" 
     
@@ -28,44 +30,60 @@ WITH RECURSIVE cte_dates AS (
     code,
     start_date + INTERVAL '1 MONTH',
     end_date,
-    EXTRACT(YEAR FROM start_date + INTERVAL '1 MONTH'),
-    EXTRACT(MONTH FROM start_date + INTERVAL '1 MONTH'),
     project_type,
     "object"
    
-  FROM cte_dates 
+  FROM cte 
   WHERE date_trunc('month', start_date + INTERVAL '1 MONTH') <= date_trunc('month', end_date)
 ), 
 
 
-
-tmp_dates AS (SELECT
+{# расчет даты начала и окончания для каждой части операции #}
+cte_1 AS (SELECT
 	  gant_index,
     code,
     start_date,
     end_date,
-    start_year,
-    start_month,
     project_type,
     "object",
     
     CASE
 
-		WHEN start_date = MAX(start_date) OVER (PARTITION BY code, gant_index) AND date_trunc('month', start_date) = date_trunc('month', end_date)  
-			THEN date_part('day', end_date)
-    	WHEN start_date = MIN(start_date) OVER (PARTITION BY code, gant_index) THEN
-    		CASE 
-    			WHEN date_part('day', (date_trunc('month', start_date) + interval '1 month' - interval '1 day') - date_trunc('day', start_date)) = 0
-    			THEN date_part('day', start_date)
-    			ELSE date_part('day', (date_trunc('month', start_date) + interval '1 month' - interval '1 day') - date_trunc('day', start_date))
-    		END
-    	ELSE date_part('day', (date_trunc('month', start_date) + INTERVAL '1 MONTH'  - interval '1 day'))
-    END AS num_days -- использовать только для расчета весов
+      WHEN start_date = min(start_date) OVER (PARTITION BY code, gant_index) -- первая часть
+      THEN start_date
+      ELSE date_trunc('month', start_date)
+
+    END as new_start_date,
+
+    CASE
+
+      WHEN start_date = min(start_date) OVER (PARTITION BY code, gant_index) -- первая часть
+      THEN least(end_date, date_trunc('month', start_date) + interval '1 month')
+      ELSE 
+        CASE
+        WHEN date_trunc('month', start_date) = date_trunc('month', end_date)
+        THEN end_date
+        ELSE date_trunc('month', start_date) + interval '1 month'
+        END
+
+    END as new_end_date
+    FROM cte),
+
+cte_2 AS (SELECT
+	  gant_index,
+    code,
+    new_start_date as start_date,
+    new_end_date as end_date,
+    EXTRACT(YEAR FROM new_start_date) AS start_year,
+    EXTRACT(MONTH FROM new_start_date) AS start_month,
+    project_type,
+    "object",
+    EXTRACT(epoch from new_end_date - new_start_date) as duration,
+    count(*) OVER (PARTITION BY code, gant_index) as row_oper_count -- кол-во строк, относящихся к одной операции
     
-FROM cte_dates),
+FROM cte_1),
 
-
- tmp_2 AS (SELECT
+cte_3 AS (SELECT
  	  gant_index,
     code,
     start_date,
@@ -74,10 +92,16 @@ FROM cte_dates),
     "object",
     start_year,
     start_month,
-    num_days,
-    num_days/sum(num_days) OVER (PARTITION BY code, gant_index) AS weight
+    duration,
+    
+    CASE 
+      when duration = 0
+      then 1
+      else duration/sum(duration) OVER (PARTITION BY code, gant_index)
+    END AS weight
 
-FROM tmp_dates)
+FROM cte_2
+WHERE NOT (duration = 0 and row_oper_count > 1))
 
 SELECT
 	t.gant_index,
@@ -98,9 +122,9 @@ SELECT
 ))) as "PRIBYL",
 round((weight * (coalesce(r."c_pln_UslGpd", 0)))) as "UslGpd"
 
-FROM tmp_2 t
+FROM cte_3 t
 	
-JOIN {{source('spider', 'raw_spider__gandoper')}} r 
+JOIN {{source('spider', 'raw_spider__gandoper')}} r
 
 {# to do: уникальный индекс в таблице исходных данных #}
 ON t.gant_index = r."index" AND t.code = r."Code" AND t.project_type = r.project_type
