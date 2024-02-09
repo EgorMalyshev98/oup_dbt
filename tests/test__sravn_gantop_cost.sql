@@ -36,8 +36,8 @@ from (
             nz_month,
             project_type,
             concat("object", "nz_year", "nz_month", "project_type") as "link1",
-            sum("s_act_CC_SMRSsI") + sum("s_act_CC_SMRSpI") as "СТОИМОСТЬ проекта [Факт]", --СТОИМОСТЬ проекта [Факт]
-            sum("s_pln_CC_SMRSsI") + sum("s_pln_CC_SMRSpI") as "СТОИМОСТЬ проекта [План]" --СТОИМОСТЬ проекта [План]
+            sum(coalesce("s_act_CC_SMRSsI",0)) + sum(coalesce("s_act_CC_SMRSpI",0)) as "СТОИМОСТЬ проекта [Факт]", --СТОИМОСТЬ проекта [Факт]
+            sum(coalesce("s_pln_CC_SMRSsI",0)) + sum(coalesce("s_pln_CC_SMRSpI",0)) as "СТОИМОСТЬ проекта [План]" --СТОИМОСТЬ проекта [План]
         
         from {{source('spider','raw_spider__gandoper')}} g
         group by 
