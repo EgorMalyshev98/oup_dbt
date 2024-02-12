@@ -10,6 +10,8 @@ sources:
         description: Архив исполнения с конфигурацией api_archive.
       - name: raw_spider__assign
         description: Назначения с конфигурацией api_assign.
+      - name: raw_spider__calen_except
+        description: Календарные исключения
       - name: raw_spider__cost
         description: Стоимостные составляющие с конфигурацией api_cost.
       - name: raw_spider__gandoper
