@@ -72,6 +72,51 @@ cte_1 AS (SELECT
     END as new_end_date
     FROM cte),
 {# вставить cte c календарными исключениями #}
+cte_3_ as (select	
+	    cte_1.gant_index,
+    	cte_1.code,
+      case
+        when extract(month from cte_1.new_start_date) = extract(month from rsce."Start") then
+        /*поиск месяца операции в списке исключений*/
+        case
+          when cte_1.new_start_date between 
+          (rsce."Start" + (date_trunc('year', cte_1.new_start_date) - date_trunc('year', rsce."Start"))) 
+          and 
+          (rsce."Fin" + (date_trunc('year', cte_1.new_end_date) - date_trunc('year', rsce."Fin"))) 
+          then (rsce."Fin_true" + (date_trunc('year', cte_1.new_end_date) - date_trunc('year', rsce."Fin_true"))) 
+          /*если дата начала находится между началом и окончанием календарного исключения, 
+          * то начало операции равно окончанию исключения*/
+          else cte_1.new_start_date /*в остальных случаях начало не меняется*/
+          end
+        else cte_1.new_start_date
+      end as start_date,
+      case
+        when extract(month from cte_1.new_end_date) = extract(month from rsce."Fin") then
+        /*поиск месяца операции в списке исключений*/  
+        case
+          when cte_1.new_end_date between 
+          (rsce."Start" + (date_trunc('year', cte_1.new_start_date) - date_trunc('year', rsce."Start"))) 
+          and 
+          (rsce."Fin" + (date_trunc('year', cte_1.new_end_date) - date_trunc('year', rsce."Fin"))) 
+          then (rsce."Start_true" + (date_trunc('year', cte_1.new_start_date) - date_trunc('year', rsce."Start_true"))) 
+          /*если дата окончания находится между началом и окончанием календарного исключения,
+          * то окончание операции равно окончанию исключения */
+          else cte_1.new_end_date /*в остальных случаях окончание не меняется*/
+          end
+        else cte_1.new_end_date
+      end as end_date,	
+    	project_type,
+    	"object"
+from cte_1
+left join {{ source('spider', 'raw_spider__calen_except') }} rsce --raw_spider__calen_except rsce
+on extract(month from cte_1.new_start_date) = extract(month from rsce."Start") and cte_1."Calen" = rsce."Calen_Code"
+where 
+	case 
+		when cte_1."Calen" like 'SR_%' and extract(month from cte_1.new_start_date) in (1, 2, 3, 12) then true
+		else false
+	end is false --не рассматривать исключения календарей SR_10 и SR_20
+)
+
 cte_2 AS (SELECT
 	  gant_index,
     code,
