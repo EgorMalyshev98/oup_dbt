@@ -19,7 +19,8 @@ WITH RECURSIVE cte AS (
     start_date,
     end_date,
     project_type,
-    "object" 
+    "object", 
+    "Calen"
     
   FROM {{ ref('int__gant_start_transform') }}
   
@@ -31,7 +32,8 @@ WITH RECURSIVE cte AS (
     start_date + INTERVAL '1 MONTH',
     end_date,
     project_type,
-    "object"
+    "object",
+    "Calen"
    
   FROM cte 
   WHERE date_trunc('month', start_date + INTERVAL '1 MONTH') <= date_trunc('month', end_date)
@@ -46,6 +48,7 @@ cte_1 AS (SELECT
     end_date,
     project_type,
     "object",
+    "Calen",
     
     CASE
 
@@ -68,7 +71,7 @@ cte_1 AS (SELECT
 
     END as new_end_date
     FROM cte),
-
+{# вставить cte c календарными исключениями #}
 cte_2 AS (SELECT
 	  gant_index,
     code,
@@ -82,7 +85,7 @@ cte_2 AS (SELECT
     count(*) OVER (PARTITION BY code, gant_index) as row_oper_count -- кол-во строк, относящихся к одной операции
     
 FROM cte_1),
-
+{# исключить перерывы внутри суток #}
 cte_3 AS (SELECT
  	  gant_index,
     code,

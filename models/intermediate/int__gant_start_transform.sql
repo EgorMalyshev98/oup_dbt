@@ -6,7 +6,8 @@ WITH tmp as (SELECT
     "Fin" as end_date,
     "VolPlan" AS vol,
     project_type,
-    "object" 
+    "object",
+    "Calen"
     
   FROM {{source('spider', 'raw_spider__gandoper')}} 
   WHERE project_type = 'проект' AND "Start" IS NOT NULL AND "VolPlan" IS NOT NULL and "Fin" is not null),
