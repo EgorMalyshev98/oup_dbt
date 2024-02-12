@@ -115,7 +115,7 @@ where
 		when cte_1."Calen" like 'SR_%' and extract(month from cte_1.new_start_date) in (1, 2, 3, 12) then true
 		else false
 	end is false --не рассматривать исключения календарей SR_10 и SR_20
-)
+),
 
 cte_2 AS (SELECT
 	  gant_index,
