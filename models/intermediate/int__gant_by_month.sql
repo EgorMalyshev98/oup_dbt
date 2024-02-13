@@ -94,6 +94,13 @@ cte_3_ as (select
         when extract(month from cte_1.new_end_date) = extract(month from rsce."Fin") then
         /*поиск месяца операции в списке исключений*/  
         case
+          when (cte_1.new_end_date between 
+          (rsce."Start" + (date_trunc('year', cte_1.new_start_date) - date_trunc('year', rsce."Start"))) 
+          and 
+          (rsce."Fin" + (date_trunc('year', cte_1.new_end_date) - date_trunc('year', rsce."Fin")))) 
+          and extract(month from cte_1.new_end_date) = extract(month from cte_1.new_start_date)
+          then (rsce."Fin_true" + (date_trunc('year', cte_1.new_start_date) - date_trunc('year', rsce."Fin_true"))) 
+          /* для операций в начале января */
           when cte_1.new_end_date between 
           (rsce."Start" + (date_trunc('year', cte_1.new_start_date) - date_trunc('year', rsce."Start"))) 
           and 
