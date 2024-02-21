@@ -1,0 +1,23 @@
+oup:
+  target: prod
+  outputs:
+
+    dev:
+      type: postgres
+      threads: [1 or more]
+      host: [host]
+      port: [port]
+      user: [dev_username]
+      pass: [dev_password]
+      dbname: [dbname]
+      schema: [dev_schema]
+
+    prod:
+      type: postgres
+      threads: 4
+      host: localhost
+      port: "{{DB_PORT}}"
+      user: "{{DBT_USER}}"
+      pass: "{{DBT_PASS}}"
+      dbname: "{{DB_NAME}}"
+      schema: public
