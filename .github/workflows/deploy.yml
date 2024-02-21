@@ -22,6 +22,7 @@ jobs:
           echo "${{ secrets.OUP_SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
           chmod 600 ~/.ssh/id_rsa
           ssh-keyscan -t rsa ${{secrets.OUP_IP}} >> ~/.ssh/known_hosts
+          ssh -i ~/.ssh/id_rsa -vvv odmin@{{secrets.OUP_IP}}
   
       # - name: Create SSH Tunnel
       #   run: |
