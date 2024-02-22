@@ -14,7 +14,7 @@ jobs:
        DB_PORT: ${{secrets.DB_PORT}}
        
      steps:
-      - name: Set up SSH
+      - name: Set up SSH tunnel
         run: |
           mkdir -p ~/.ssh
           echo "${{ secrets.OUP_SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
@@ -37,11 +37,7 @@ jobs:
         run: dbt debug --profiles-dir ./.dbt/
         
       - name: Run commands on remote server
-        uses: D3rHase/ssh-command-action@v0.2.2
-        with:
-          host: ${{secrets.OUP_IP}}
-          user: odmin
-          private_key: ${{secrets.SSH_PRIVATE_KEY}}
-          port: ${{secrets.OUP_SSH_PORT}}
-          command: |
-            echo ls -la        
+        run: |
+          ssh -i ~/.ssh/id_rsa -p ${{secrets.OUP_SSH_PORT}} odmin@${{secrets.OUP_IP}};
+          echo ls -la
+          
