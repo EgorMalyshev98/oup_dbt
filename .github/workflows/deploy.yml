@@ -34,5 +34,5 @@ jobs:
         run: pip3 install dbt-postgres==1.5.3
 
       - name: Debug
-        run: dbt debug --profiles-dir .
+        run: dbt debug --profiles-dir ./.dbt/
         
