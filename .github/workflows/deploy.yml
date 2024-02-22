@@ -5,7 +5,7 @@ on:
     branches: ["master"]
 
 jobs:
-   build:
+  build:
      runs-on: ubuntu-latest
      env:
        DBT_USER: ${{secrets.DBT_USER}}
@@ -35,16 +35,20 @@ jobs:
 
       - name: Debug
         run: dbt debug --profiles-dir ./.dbt/
-        
-      - name: Run commands on remote server
-        uses: nerd4ever/ssh-action@master
+      
+  remote:
+    runs-on: ubuntu-latest
+    needs: [build]
+    steps:
+      - name: executing remote ssh commands using ssh key
+        uses: appleboy/ssh-action@v1.0.3
         with:
           host: ${{ secrets.OUP_IP }}
-          user: odmin
+          username: odmin
           key: ${{ secrets.OUP_SSH_PRIVATE_KEY }}
           port: ${{ secrets.OUP_SSH_PORT }}
-          command: |
+          script: |
             pwd
-            ls -a
+            ls -la
 
         
