@@ -7,15 +7,13 @@ on:
 jobs:
    build:
      runs-on: ubuntu-latest
-     # env:
-     #   DBT_USER: ${{secrets.DBT_USER}}
-     #   DBT_PASS: ${{secrets.DBT_PASS}}
-     #   DB_NAME: ${{secrets.DB_NAME}}
-     #   DB_PORT: ${{secrets.DB_PORT}}
+     env:
+       DBT_USER: ${{secrets.DBT_USER}}
+       DBT_PASS: ${{secrets.DBT_PASS}}
+       DB_NAME: ${{secrets.DB_NAME}}
+       DB_PORT: ${{secrets.DB_PORT}}
+       
      steps:
-      # - name: Checkout_Repository
-      #   uses: actions/checkout@v3
-  
       - name: Set up SSH
         run: |
           mkdir -p ~/.ssh
@@ -23,4 +21,18 @@ jobs:
           chmod 600 ~/.ssh/id_rsa
           ssh-keyscan -p ${{secrets.OUP_SSH_PORT}} -t rsa ${{secrets.OUP_IP}} >> ~/.ssh/known_hosts
           ssh -i ~/.ssh/id_rsa -p ${{secrets.OUP_SSH_PORT}} -N -L ${{secrets.DB_PORT}}:${{secrets.OUP_LOCAL_IP}}:${{secrets.DB_PORT}} odmin@${{secrets.OUP_IP}}
-    
+      
+      - name: Checkout_Repository
+        uses: actions/checkout@v3
+        
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10.10'
+      
+      - name: Install dbt
+        run: pip3 install dbt-postgres==1.5.3
+
+      - name: Debug
+        run: dbt debug --profiles-dir .
+        
