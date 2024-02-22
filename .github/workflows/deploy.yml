@@ -34,8 +34,14 @@ jobs:
         run: pip3 install dbt-postgres==1.5.3
 
       - name: Debug
-        run: dbt debug --profiles-dir ./.ddt/
+        run: dbt debug --profiles-dir ./.dbt/
         
-      - name: foo
-        run: echo foo
-        
+      - name: Run commands on remote server
+        uses: D3rHase/ssh-command-action@v0.2.2
+        with:
+          host: ${{secrets.OUP_IP}}
+          user: odmin
+          private_key: ${{secrets.SSH_PRIVATE_KEY}}
+          port: ${{secrets.OUP_SSH_PORT}}
+          command: |
+            echo ls -la        
