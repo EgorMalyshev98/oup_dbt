@@ -39,5 +39,5 @@ jobs:
       - name: Run commands on remote server
         run: |
           ssh -i ~/.ssh/id_rsa -p ${{secrets.OUP_SSH_PORT}} odmin@${{secrets.OUP_IP}}
-          'pwd;'
+          'pwd'
           
