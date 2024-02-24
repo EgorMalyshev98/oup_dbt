@@ -15,9 +15,9 @@ oup:
     prod:
       type: postgres
       threads: 4
-      host: "{{ env_var('DB_HOST') }}"
-      port: "{{ env_var('DB_PORT') | as_number }}"
+      host: "{{ env_var('DWH_HOST') }}"
+      port: "{{ env_var('DWH_PORT') | as_number }}"
       user: "{{ env_var('DBT_USER') }}"
-      pass: "{{ env_var('DBT_PASS') }}"
-      dbname: "{{ env_var('DB_NAME') }}"
+      pass: "{{ env_var('DBT_ENV_SECRET_PASS') }}"
+      dbname: "{{ env_var('DWH_NAME') }}"
       schema: public
