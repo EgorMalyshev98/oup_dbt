@@ -15,8 +15,8 @@ oup:
     prod:
       type: postgres
       threads: 4
-      host: localhost
-      port: 5434
+      host: "{{ env_var('DB_HOST') }}"
+      port: "{{ env_var('DB_PORT') | as_number }}"
       user: "{{ env_var('DBT_USER') }}"
       pass: "{{ env_var('DBT_PASS') }}"
       dbname: "{{ env_var('DB_NAME') }}"
