@@ -40,6 +40,14 @@ jobs:
   deploy-airflow-dag:
     runs-on: ubuntu-latest
     needs: [build-dbt-project]
+    
+    env:
+     DBT_USER: ${{secrets.DBT_USER}}
+     DBT_ENV_SECRET_PASS: ${{secrets.DBT_ENV_SECRET_PASS}}
+     DWH_NAME: ${{secrets.DWH_NAME}}
+     DWH_PORT: ${{secrets.DWH_PORT}}
+     DWH_HOST: ${{secrets.DWH_HOST}}
+     
     steps:
       - name: executing remote ssh commands using ssh key
         uses: appleboy/ssh-action@v1.0.3
