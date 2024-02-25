@@ -40,33 +40,28 @@ jobs:
   deploy-airflow-dag:
     runs-on: ubuntu-latest
     needs: [build-dbt-project]
-    
-    env:
-     DBT_USER: ${{secrets.DBT_USER}}
-     DBT_ENV_SECRET_PASS: ${{secrets.DBT_ENV_SECRET_PASS}}
-     DWH_NAME: ${{secrets.DWH_NAME}}
-     DWH_PORT: ${{secrets.DWH_PORT}}
-     DWH_HOST: ${{secrets.DWH_HOST}}
      
     steps:
       - name: executing remote ssh commands using ssh key
         uses: appleboy/ssh-action@v1.0.3
+        env:
+           DBT_USER: ${{secrets.DBT_USER}}
+           DBT_ENV_SECRET_PASS: ${{secrets.DBT_ENV_SECRET_PASS}}
+           DWH_NAME: ${{secrets.DWH_NAME}}
+           DWH_PORT: ${{secrets.DWH_PORT}}
+           DWH_HOST: ${{secrets.DWH_HOST}}
+           
         with:
           host: ${{ secrets.OUP_IP }}
           username: odmin
           key: ${{ secrets.OUP_SSH_PRIVATE_KEY }}
           port: ${{ secrets.OUP_SSH_PORT }}
+          script_stop: true
+          envs: DBT_user, DBT_ENV_SECRET_PASS, DWH_NAME, DWH_PORT, DWH_HOST
           script: |
             source $PWD/oup-analytics/airflow/venv/bin/activate
             cd $PWD/oup-analytics/airflow/dags/oup_dbt
             git submodule update --recursive --remote
-            
-            export DWH_HOST=$DWH_HOST
-            export DWH_PORT=$DWH_PORT
-            export DBT_USER=$DBT_USER
-            export DBT_ENV_SECRET_PASS=$DBT_ENV_SECRET_PASS
-            export DWH_NAME=$DWH_NAME
-            
             dbt compile --profiles-dir ./.dbt/
 
         
