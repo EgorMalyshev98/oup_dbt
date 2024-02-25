@@ -21,7 +21,7 @@ jobs:
           echo "${{ secrets.OUP_SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
           chmod 600 ~/.ssh/id_rsa
           ssh-keyscan -p ${{secrets.OUP_SSH_PORT}} -t rsa ${{secrets.OUP_IP}} >> ~/.ssh/known_hosts
-          ssh -i ~/.ssh/id_rsa -p ${{secrets.OUP_SSH_PORT}} -fN -L ${{secrets.DB_PORT}}:${{secrets.OUP_LOCAL_IP}}:${{secrets.DB_PORT}} odmin@${{secrets.OUP_IP}}
+          ssh -i ~/.ssh/id_rsa -p ${{secrets.OUP_SSH_PORT}} -fN -L $DWH_PORT:${{secrets.OUP_LOCAL_IP}}:$DWH_PORT odmin@${{secrets.OUP_IP}}
       
       - name: Checkout_Repository
         uses: actions/checkout@v3
