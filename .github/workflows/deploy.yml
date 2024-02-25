@@ -5,7 +5,7 @@ on:
     branches: ["master"]
 
 jobs:
-  build-project:
+  build-dbt-project:
      runs-on: ubuntu-latest
      env:
        DBT_USER: ${{secrets.DBT_USER}}
@@ -37,9 +37,9 @@ jobs:
       - name: Debug
         run: dbt debug --profiles-dir ./.dbt/
       
-  deploy:
+  deploy-airflow-dag:
     runs-on: ubuntu-latest
-    needs: [build-project]
+    needs: [build-dbt-project]
     steps:
       - name: executing remote ssh commands using ssh key
         uses: appleboy/ssh-action@v1.0.3
@@ -49,6 +49,7 @@ jobs:
           key: ${{ secrets.OUP_SSH_PRIVATE_KEY }}
           port: ${{ secrets.OUP_SSH_PORT }}
           script: |
+            source $PWD/oup-analytics/airflow/venv/bin/activate
             cd $PWD/oup-analytics/airflow/dags/oup_dbt
             git submodule update --recursive --remote
             
