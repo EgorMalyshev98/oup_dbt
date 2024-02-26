@@ -5,13 +5,14 @@ on:
     branches: ["master"]
 
 jobs:
-  build:
+  build-dbt-project:
      runs-on: ubuntu-latest
      env:
        DBT_USER: ${{secrets.DBT_USER}}
-       DBT_PASS: ${{secrets.DBT_PASS}}
-       DB_NAME: ${{secrets.DB_NAME}}
-       DB_PORT: ${{secrets.DB_PORT}}
+       DBT_ENV_SECRET_PASS: ${{secrets.DBT_ENV_SECRET_PASS}}
+       DWH_NAME: ${{secrets.DWH_NAME}}
+       DWH_PORT: ${{secrets.DWH_PORT}}
+       DWH_HOST: ${{secrets.DWH_HOST}}
        
      steps:
       - name: Set up SSH tunnel
@@ -20,7 +21,7 @@ jobs:
           echo "${{ secrets.OUP_SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
           chmod 600 ~/.ssh/id_rsa
           ssh-keyscan -p ${{secrets.OUP_SSH_PORT}} -t rsa ${{secrets.OUP_IP}} >> ~/.ssh/known_hosts
-          ssh -i ~/.ssh/id_rsa -p ${{secrets.OUP_SSH_PORT}} -fN -L ${{secrets.DB_PORT}}:${{secrets.OUP_LOCAL_IP}}:${{secrets.DB_PORT}} odmin@${{secrets.OUP_IP}}
+          ssh -i ~/.ssh/id_rsa -p ${{secrets.OUP_SSH_PORT}} -fN -L $DWH_PORT:${{secrets.OUP_LOCAL_IP}}:$DWH_PORT odmin@${{secrets.OUP_IP}}
       
       - name: Checkout_Repository
         uses: actions/checkout@v3
@@ -36,19 +37,31 @@ jobs:
       - name: Debug
         run: dbt debug --profiles-dir ./.dbt/
       
-  remote:
+  deploy-airflow-dag:
     runs-on: ubuntu-latest
-    needs: [build]
+    needs: [build-dbt-project]
+     
     steps:
       - name: executing remote ssh commands using ssh key
         uses: appleboy/ssh-action@v1.0.3
+        env:
+           DBT_USER: ${{secrets.DBT_USER}}
+           DBT_ENV_SECRET_PASS: ${{secrets.DBT_ENV_SECRET_PASS}}
+           DWH_NAME: ${{secrets.DWH_NAME}}
+           DWH_PORT: ${{secrets.DWH_PORT}}
+           DWH_HOST: ${{secrets.DWH_HOST}}
+           
         with:
           host: ${{ secrets.OUP_IP }}
           username: odmin
           key: ${{ secrets.OUP_SSH_PRIVATE_KEY }}
           port: ${{ secrets.OUP_SSH_PORT }}
+          script_stop: true
+          envs: DBT_user, DBT_ENV_SECRET_PASS, DWH_NAME, DWH_PORT, DWH_HOST
           script: |
-            pwd
-            ls -la
+            source $PWD/oup-analytics/airflow/venv/bin/activate
+            cd $PWD/oup-analytics/airflow/dags/oup_dbt
+            git submodule update --recursive --remote
+            dbt compile --profiles-dir ./.dbt/
 
         
