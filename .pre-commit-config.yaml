@@ -13,3 +13,4 @@ repos:
     rev: 2.3.5
     hooks:
       - id: sqlfluff-fix
+        additional_dependencies: ['dbt-postgres==1.5.3', 'sqlfluff-templater-dbt']
