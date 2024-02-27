@@ -11,7 +11,7 @@ templater = dbt
 # See https://docs.sqlfluff.com/en/stable/configuration.html#enabling-and-disabling-rules
 # AM04 (ambiguous.column_count) and ST06 (structure.column_order) are
 # two of the more controversial rules included to illustrate usage.
-exclude_rules = ambiguous.column_count, structure.column_order, RF02, AL06, RF05
+exclude_rules = ambiguous.column_count, structure.column_order, layout.indent, layout.cte_bracket, layout.select_targets, RF02, AL06, RF05, LT02
 
 # The standard max_line_length is 80 in line with the convention of
 # other tools and several style guides. Many projects however prefer
@@ -26,6 +26,15 @@ max_line_length = 120
 # If negative or zero, implies number_of_cpus - specified_number.
 # e.g. -1 means use all processors but one. 0 means all cpus.
 processes = -1
+
+
+[sqlfluff:rules]
+capitalisation_policy = lower
+extended_capitalisation_policy = lower
+
+[sqlfluff:rules:convention.terminator]
+multiline_newline = True
+
 
 # If using the dbt templater, we recommend setting the project dir.
 [sqlfluff:templater:dbt]
