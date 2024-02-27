@@ -2,7 +2,7 @@
 
 
 with
-    tmp as (
+                    tmp as (
 
         select
             code,
