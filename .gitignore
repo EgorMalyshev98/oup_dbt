@@ -7,4 +7,5 @@ oup_dbt.code-workspace
 .env
 profiles.yml
 target/*
-!target/manifest.json
+!.dbt/profiles.yml
+.user.yml
