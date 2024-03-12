@@ -1,17 +1,17 @@
 {{ config(materialized="table", indexes=[{"columns": ["code"], "type": "hash"}]) }}
 
-
+{# 
+  Разбивка факта исполнения операции по месяцам. 
+  Увелечиение даты начала исполнения рекурсивной функцией на 1 месяц, 
+  пока месяц начала операции не будет равен месяцу окночания.
+#}
 with recursive
     tmp1 as (
         select
             "index" as archive_index,
             "OperCode" as code,
             "Start" as start_date,
-            case
-                when date_part('day', "Fin") = 1
-                then "Fin" - interval '1 day'
-                else "Fin"
-            end as end_date,
+            "Fin" as end_date,
             "Vol" as vol,
             extract(year from "Start") as start_year,
             extract(month from "Start") as start_month,
@@ -41,7 +41,77 @@ with recursive
             <= date_trunc('month', end_date)
     ),
 
-    tmp2 as (
+    cte_1 as (
+        select
+            archive_index,
+            code,
+            start_date,
+            end_date,
+            project_type,
+
+            case
+
+                when
+                    start_date = min(start_date) over (partition by code, archive_index)  -- первая часть операции
+                then start_date
+                else date_trunc('month', start_date)
+
+            end as new_start_date,
+
+            case
+
+                when
+                    start_date = min(start_date) over (partition by code, archive_index)  -- первая часть операции
+                then
+                    least(
+                        end_date, date_trunc('month', start_date) + interval '1 month'
+                    )
+                when date_trunc('month', start_date) = date_trunc('month', end_date)
+                then end_date
+                else date_trunc('month', start_date) + interval '1 month'
+
+            end as new_end_date
+        from tmp1
+    ),
+
+    cte_2 as (
+        select
+            archive_index,
+            code,
+            project_type,
+            new_start_date as start_date,
+            new_end_date as end_date,
+            extract(year from new_start_date) as start_year,
+            extract(month from new_start_date) as start_month,
+            extract(epoch from new_end_date - new_start_date) as duration,
+            -- кол-во строк, относящихся к одной операции
+            count(*) over (partition by code, archive_index) as row_oper_count
+
+        from cte_1
+    ),
+
+    cte_3 as (
+        select
+            archive_index,
+            code,
+            start_date,
+            end_date,
+            project_type,
+            start_year,
+            start_month,
+            duration,
+
+            case
+                when duration = 0
+                then 1
+                else duration / sum(duration) over (partition by code, archive_index)
+            end as weight
+
+        from cte_2
+        where not (duration = 0 and row_oper_count > 1)
+    ),
+
+    {# tmp2 as (
         select
             code,
             start_date,
@@ -103,8 +173,7 @@ with recursive
             num_days / sum(num_days) over (partition by code, archive_index) as weight
 
         from tmp2
-    ),
-
+    ), #}
     final as (
         select
             row_number() over () as id,
@@ -168,7 +237,7 @@ with recursive
             ) as "PRIBYL",
             round(sum(weight * (coalesce(r."c_aac_UslGpd", 0)))) as "UslGpd"
 
-        from tmp3 as t
+        from cte_3 as t
 
         inner join
             {{ source("spider", "raw_spider__archive") }} as r
@@ -185,4 +254,6 @@ with recursive
 {# оставляем только ключевые значения #}
 select *
 from final
-where "ZATRATY" is not null or "PRIBYL" is not null or "SMRFull" is not null
+where
+    ("ZATRATY" is not null or "PRIBYL" is not null or "SMRFull" is not null)
+    and code = 'Tv_OX_4.1.2.2.311214917_Art_Art1n1'

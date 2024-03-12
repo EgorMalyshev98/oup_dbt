@@ -16,9 +16,11 @@ with
             project_type = 'проект'
             and "Start" is not null
             and "VolPlan" is not null
+            -- Добавлено условие <"Fin" is not null>, чтобы избавиться от операций
+            -- связанных с переключателем
             and "Fin" is not null
     ),
-    {# Добавлено условие <"Fin" is not null>, чтобы избавиться от операций связанных с переключателем #}
+
     tmp2 as (
 
         select

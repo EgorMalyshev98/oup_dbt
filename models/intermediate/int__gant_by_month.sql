@@ -41,7 +41,7 @@ with recursive
 
             case
 
-                when start_date = min(start_date) over (partition by code, gant_index)  -- первая часть
+                when start_date = min(start_date) over (partition by code, gant_index)  -- первая часть операции
                 then start_date
                 else date_trunc('month', start_date)
 
@@ -49,7 +49,7 @@ with recursive
 
             case
 
-                when start_date = min(start_date) over (partition by code, gant_index)  -- первая часть
+                when start_date = min(start_date) over (partition by code, gant_index)  -- первая часть операции
                 then
                     least(
                         end_date, date_trunc('month', start_date) + interval '1 month'
@@ -61,7 +61,7 @@ with recursive
             end as new_end_date
         from cte
     ),
-    {# вставить cte c календарными исключениями #}
+    {# обработка календарных исключений #}
     cte_3_ as (  -- noqa: ST03
         select
             cte_1.gant_index,
@@ -153,7 +153,7 @@ with recursive
                                     - date_trunc('year', rsce."Start_true")
                                 )
                             )
-                        /*если дата окончания находится между началом и окончанием календарного исключения,
+                        /*если дата окончания операции находится между началом и окончанием календарного исключения,
                         * то окончание операции равно окончанию исключения */
                         else cte_1.new_end_date  /* в остальных случаях окончание не меняется*/
                     end
