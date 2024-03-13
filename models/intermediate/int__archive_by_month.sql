@@ -256,4 +256,3 @@ select *
 from final
 where
     ("ZATRATY" is not null or "PRIBYL" is not null or "SMRFull" is not null)
-    and code = 'Tv_OX_4.1.2.2.311214917_Art_Art1n1'
