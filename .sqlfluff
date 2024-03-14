@@ -5,7 +5,7 @@
 dialect = postgres
 
 # One of [raw|jinja|python|placeholder]
-templater = dbt
+templater = jinja
 
 # Comma separated list of rules to exclude, or None
 # See https://docs.sqlfluff.com/en/stable/configuration.html#enabling-and-disabling-rules
