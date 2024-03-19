@@ -63,9 +63,9 @@ jobs:
           script_stop: true
           envs: DBT_user, DBT_ENV_SECRET_PASS, DWH_NAME, DWH_PORT, DWH_HOST
           script: |
-            source $PWD/oup-analytics/airflow/venv/bin/activate
             cd $PWD/oup-analytics/airflow/dags/oup_dbt
             git submodule update --recursive --remote
+            source $PWD/oup-analytics/airflow/venv/bin/activate
             dbt compile --profiles-dir ./.dbt/
 
         
