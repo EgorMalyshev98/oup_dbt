@@ -62,7 +62,7 @@ jobs:
           port: ${{ secrets.OUP_SSH_PORT }}
           script_stop: true
           script: |
-            cd $PWD/oup-analytics/airflow/dags/oup_dbt
+            cd $PWD/oup-analytics/airflow/
             git submodule update --recursive --remote
             git status
 
