@@ -46,7 +46,28 @@ jobs:
     needs: [build-dbt-project]
      
     steps:
-      - name: executing remote ssh commands using ssh key
+      - name: update submodule
+        uses: appleboy/ssh-action@v1.0.3
+        env:
+           DBT_USER: ${{secrets.DBT_USER}}
+           DBT_ENV_SECRET_PASS: ${{secrets.DBT_ENV_SECRET_PASS}}
+           DWH_NAME: ${{secrets.DWH_NAME}}
+           DWH_PORT: ${{secrets.DWH_PORT}}
+           DWH_HOST: ${{secrets.DWH_HOST}}
+           
+        with:
+          host: ${{ secrets.OUP_IP }}
+          username: odmin
+          key: ${{ secrets.OUP_SSH_PRIVATE_KEY }}
+          port: ${{ secrets.OUP_SSH_PORT }}
+          script_stop: true
+          script: |
+            cd $PWD/oup-analytics/airflow/dags/oup_dbt
+            git submodule update --recursive --remote
+            git status
+
+
+      - name: compile dbt project
         uses: appleboy/ssh-action@v1.0.3
         env:
            DBT_USER: ${{secrets.DBT_USER}}
@@ -65,7 +86,6 @@ jobs:
           script: |
             source $PWD/oup-analytics/airflow/venv/bin/activate
             cd $PWD/oup-analytics/airflow/dags/oup_dbt
-            git submodule update --recursive --remote
             dbt compile --profiles-dir ./.dbt/
 
         
