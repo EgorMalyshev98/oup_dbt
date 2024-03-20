@@ -67,7 +67,7 @@ jobs:
             source $PWD/oup-analytics/airflow/venv/bin/activate
             cd $PWD/oup-analytics/airflow/
             git submodule update --recursive --remote
-            cd /dags/oup_dbt
+            cd ./dags/oup_dbt
             dbt compile --profiles-dir ./.dbt/
 
         
