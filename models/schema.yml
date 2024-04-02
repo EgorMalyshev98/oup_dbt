@@ -50,6 +50,12 @@ sources:
             description: название объекта в Spider Project
       - name: dict__spider_key_res
         description: справочник ключевых ресурсов на операциях
+      - name: dict__spider_kol_ekip
+        description: справочник количества экипажа на ресурсах
+      - name: dict__fot
+        description: Справочник ФОТ. Часовая ставка ФОТ по периодам (кварталам)
+      - name: dict__mim
+        descriptim: Справочник ЭМиМ. Часовая ставка частей ЭМиМ по периодам (кварталам)
   - name: excel
     schema: public
     database: oup
@@ -165,3 +171,4 @@ models:
        description: № п/п по контрактной ведомости
      - name: Конструктив
        description: Земляное полотно, Дорожная одежда и Прочие работы
+ - name: mart__1c_costs
