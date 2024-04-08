@@ -36,11 +36,10 @@ with
         -- фильтр ниже присваивает статус ненормируемая работа всем работам, которых
         -- нет в таблице "1_c__norm_workload"
         where
-            not exists (
-                select ctw.work_id
-                from {{ source("1c", "1_c__norm_workload") }} as cnw
-                where ctw.work_id = cnw.work_id
-            )
+        	--выбираем ненормируемые работы и ненормативные ресурсы на нормируемых работах
+        	NOT EXISTS (SELECT 1
+        				from {{ source("1c", "1_c__norm_workload") }} nwd
+        				WHERE nwd.work_id = ctw.work_id AND nwd.analytics_value = ctw.analytics_value)
             -- фильтр ниже убирает удаленные и непроведенные ЖУФВР-ы
             and (czh.delete_flag is false and czh.is_done is true)
             and don.spider_name is not null
