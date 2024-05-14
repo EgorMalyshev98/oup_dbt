@@ -37,7 +37,7 @@ with
         	NOT EXISTS (SELECT 1
         				from {{ source("1c", "1_c__norm_workload") }} nwd
         				WHERE nwd.work_id = ctw.work_id AND nwd.analytics_value = ctw.analytics_value
-                        -- analytics_value Техника не найдено часы учитываются только в таблица техника рабочие 
+                        -- analytics_value Техника не найдена часы учитываются только в таблице техника рабочие 
         				and ctw.analytics_value not in ('5195e3a3-66ff-11ec-a16c-00224dda35d0', 'e9ddfb4c-5be7-11ec-a16c-00224dda35d0'))
             -- фильтр ниже убирает удаленные и непроведенные ЖУФВР-ы
             and (czh.delete_flag is false and czh.is_done is true)
@@ -60,7 +60,7 @@ with
 					and row_number () over (partition by cnw."work_id", cnw."analytics_value" order by cnw.res_spider_code desc) = 1 
 					and cnw.res_spider_code = 'Mont'
 				then cnw.fact_workload - (sum(cnw.fact_workload) over (partition by cnw."work_id", cnw."analytics_value") - ctw1.hours)
-				-- присвоить 0 часов для !Техника НАЕМНАЯ (НЕ НАЙДЕНА), потому что их часы учтены в вехней части union all 
+				-- присвоить 0 часов для !Техника (НЕ НАЙДЕНА), потому что их часы учтены в вехней части union all 
 				when cnw."analytics_value" in ('5195e3a3-66ff-11ec-a16c-00224dda35d0', 'e9ddfb4c-5be7-11ec-a16c-00224dda35d0') then 0 
 				else cnw.fact_workload 
 			end as "Фактическая трудоемкость", 
@@ -210,7 +210,7 @@ left join
 	where rsa."project_type" = 'проект' and rsa."ResCode" is not null  
 	group by structure_unique_code) table1 
 	on replace(cw.structure_unique_code, ' ', '') = table1.structure_unique_code
--- соединение с таблицей с количесвтом экмпажа на ресурсах
+-- соединение с таблицей с количесвтом экипажа на ресурсах
 left join {{ source('dicts', 'dict__spider_kol_ekip') }} as dske on t1."Код ресурса" = dske."Code" 
 -- фильтр ниже для выборки только целых проектов
 where rsg.project_type = 'проект' 
