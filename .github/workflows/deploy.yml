@@ -63,11 +63,12 @@ jobs:
   deploy-airflow-dag:
     runs-on: ubuntu-latest
     needs: [build-dbt-project]
+    if: ${{ vars.IS_MODIFIED }}
   
     steps:
         - name: debug
           run: |
-            echo ${{needs.build-dbt-project.outputs.IS_MODIFIED}}
+            echo "RUN DEPLOY"
 
   #     - name: update submodule and compile dbt project
   #       uses: appleboy/ssh-action@v1.0.3
