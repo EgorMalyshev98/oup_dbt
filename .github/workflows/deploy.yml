@@ -37,7 +37,14 @@ jobs:
           
       - name: Debug
         run: dbt debug --profiles-dir ./.dbt/
-
+        
+      - uses: nrwl/last-successful-commit-action@v1
+        id: last_successful_commit
+        with:
+          branch: 'master'
+          workflow_id: 'deploy.yml'
+          github_token: ${{ secrets.G_TOKEN }}
+      - run: echo ${{ steps.last_successful_commit.outputs.commit_hash }}
       - name: Build modified models
         run: |
           git checkout HEAD^
