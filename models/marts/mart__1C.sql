@@ -44,8 +44,8 @@ with
                 where
                     nwd.work_id = ctw.work_id
                     and nwd.analytics_value = ctw.analytics_value
-                    -- analytics_value Техника не найдено часы учитываются только в
-                    -- таблица техника рабочие
+                    -- analytics_value Техника не найдена часы учитываются только в
+                    -- таблице техника рабочие
                     and ctw.analytics_value not in (
                         '5195e3a3-66ff-11ec-a16c-00224dda35d0',
                         'e9ddfb4c-5be7-11ec-a16c-00224dda35d0'
@@ -86,8 +86,8 @@ with
                         )
                         - ctw1.hours
                     )
-                -- присвоить 0 часов для !Техника НАЕМНАЯ (НЕ НАЙДЕНА), потому что их
-                -- часы учтены в вехней части union all
+                -- присвоить 0 часов для !Техника (НЕ НАЙДЕНА), потому что их часы
+                -- учтены в вехней части union all
                 when
                     cnw."analytics_value" in (
                         '5195e3a3-66ff-11ec-a16c-00224dda35d0',
