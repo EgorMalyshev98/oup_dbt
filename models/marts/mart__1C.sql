@@ -58,7 +58,8 @@ with
         union all
 
         -- 2 шаг Нормируемые работы из таблицы '1_c__norm_workload'
-        select  -- noqa: ST06
+        select
+            -- тест actions
             don.spider_name as "object",
             -- cw.zhufvr_id,                    
             cnw.work_id,
