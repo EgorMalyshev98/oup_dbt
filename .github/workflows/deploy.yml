@@ -44,10 +44,10 @@ jobs:
           branch: 'master'
           workflow_id: 'deploy.yml'
           github_token: ${{ secrets.G_TOKEN }}
-      - run: echo ${{ steps.last_successful_commit.outputs.commit_hash }}
+ 
       - name: Build modified models
         run: |
-          git checkout HEAD^
+          git checkout ${{ steps.last_successful_commit.outputs.commit_hash }}
           dbt compile --target-path ./target/previous_target --profiles-dir ./.dbt/
           git checkout -
           dbt compile --profiles-dir ./.dbt/
