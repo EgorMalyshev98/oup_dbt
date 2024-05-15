@@ -32,42 +32,54 @@ jobs:
           python-version: '3.10.10'
       
       - name: Install dbt
-        run: pip3 install dbt-postgres==1.5.3
+        run: pip3 install dbt-postgres==1.7.10
 
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+          
       - name: Debug
         run: dbt debug --profiles-dir ./.dbt/
+
+      - name: Build modified models
+        run: |
+          git checkout HEAD^
+          dbt compile --target-path ./target/previous_target --profiles-dir ./.dbt/
+          git checkout $(git rev-parse --abbrev-ref HEAD)
+          dbt compile --profiles-dir ./.dbt/
+          dbt ls -s "state:modified+" --state ./target/previous_target
       
-      - name: Build
-        run: dbt build --profiles-dir ./.dbt/
+      # - name: Build
+      #   run: dbt build --profiles-dir ./.dbt/
       
 
-  deploy-airflow-dag:
-    runs-on: ubuntu-latest
-    needs: [build-dbt-project]
+  # deploy-airflow-dag:
+  #   runs-on: ubuntu-latest
+  #   needs: [build-dbt-project]
      
-    steps:
+  #   steps:
 
-      - name: update submodule and compile dbt project
-        uses: appleboy/ssh-action@v1.0.3
-        env:
-           DBT_USER: ${{secrets.DBT_USER}}
-           DBT_ENV_SECRET_PASS: ${{secrets.DBT_ENV_SECRET_PASS}}
-           DWH_NAME: ${{secrets.DWH_NAME}}
-           DWH_PORT: ${{secrets.DWH_PORT}}
-           DWH_HOST: ${{secrets.DWH_HOST}}
+  #     - name: update submodule and compile dbt project
+  #       uses: appleboy/ssh-action@v1.0.3
+  #       env:
+  #          DBT_USER: ${{secrets.DBT_USER}}
+  #          DBT_ENV_SECRET_PASS: ${{secrets.DBT_ENV_SECRET_PASS}}
+  #          DWH_NAME: ${{secrets.DWH_NAME}}
+  #          DWH_PORT: ${{secrets.DWH_PORT}}
+  #          DWH_HOST: ${{secrets.DWH_HOST}}
            
-        with:
-          host: ${{ secrets.OUP_IP }}
-          username: odmin
-          key: ${{ secrets.OUP_SSH_PRIVATE_KEY }}
-          port: ${{ secrets.OUP_SSH_PORT }}
-          script_stop: true
-          envs: DBT_user, DBT_ENV_SECRET_PASS, DWH_NAME, DWH_PORT, DWH_HOST
-          script: |
-            source $PWD/oup-analytics/airflow/venv/bin/activate
-            cd $PWD/oup-analytics/airflow/
-            git submodule update --recursive --remote
-            cd ./dags/oup_dbt
-            dbt compile --profiles-dir ./.dbt/
+  #       with:
+  #         host: ${{ secrets.OUP_IP }}
+  #         username: odmin
+  #         key: ${{ secrets.OUP_SSH_PRIVATE_KEY }}
+  #         port: ${{ secrets.OUP_SSH_PORT }}
+  #         script_stop: true
+  #         envs: DBT_user, DBT_ENV_SECRET_PASS, DWH_NAME, DWH_PORT, DWH_HOST
+  #         script: |
+  #           source $PWD/oup-analytics/airflow/venv/bin/activate
+  #           cd $PWD/oup-analytics/airflow/
+  #           git submodule update --recursive --remote
+  #           cd ./dags/oup_dbt
+  #           dbt compile --profiles-dir ./.dbt/
 
         
