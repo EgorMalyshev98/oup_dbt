@@ -45,13 +45,9 @@ jobs:
         run: |
           git checkout HEAD^
           dbt compile --target-path ./target/previous_target --profiles-dir ./.dbt/
-          echo "PREVIOUS COMPILED"
           git checkout $(git rev-parse --abbrev-ref HEAD)
-          echo "CHEKOUT HEAD"
           dbt compile --profiles-dir ./.dbt/
-          echo "CURRENT COMMIT COMPILED"
-          echo $(ls -l)
-          echo $(ls -l ./target/)
+          dbt ls -s "state:modified+" --state ./target/previous_target --profiles-dir ./.dbt/
       
       # - name: Build
       #   run: dbt build --profiles-dir ./.dbt/
