@@ -50,8 +50,8 @@ jobs:
           echo "CHEKOUT HEAD"
           dbt compile --profiles-dir ./.dbt/
           echo "CURRENT COMMIT COMPILED"
-          echo ls -l
-          echo ls -l ./target/
+          echo $(ls -l)
+          echo $(ls -l ./target/)
       
       # - name: Build
       #   run: dbt build --profiles-dir ./.dbt/
