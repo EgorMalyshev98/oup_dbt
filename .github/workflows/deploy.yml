@@ -49,10 +49,10 @@ jobs:
           if [[ $DBT_LS_OUTPUT != *"No nodes selected!"* ]]; then
             echo $DBT_LS_OUTPUT
             dbt build -s "state:modified+" --state ./target/previous_target --profiles-dir ./.dbt/
-            echo "::set-output name=IS_MODIFIED::true"
+            echo "{IS_MODIFIED}={true}" >> $GITHUB_OUTPUT
           else
             echo "Skipping deploy job as no nodes selected."
-            echo "::set-output name=IS_MODIFIED::false"
+            echo "{IS_MODIFIED}={false}" >> $GITHUB_OUTPUT
           fi
           
       
@@ -67,7 +67,7 @@ jobs:
     steps:
         - name: debug
           run: |
-            echo $(needs.build-dbt-project.outputs.IS_MODIFIED)
+            echo ${{needs.build-dbt-project.outputs.IS_MODIFIED}}
 
   #     - name: update submodule and compile dbt project
   #       uses: appleboy/ssh-action@v1.0.3
