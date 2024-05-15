@@ -36,12 +36,21 @@ with
         -- фильтр ниже присваивает статус ненормируемая работа всем работам, которых
         -- нет в таблице "1_c__norm_workload"
         where
-        	--выбираем ненормируемые работы и ненормативные ресурсы на нормируемых работах
-        	NOT EXISTS (SELECT 1
-        				from {{ source("1c", "1_c__norm_workload") }} nwd
-        				WHERE nwd.work_id = ctw.work_id AND nwd.analytics_value = ctw.analytics_value
-                        -- analytics_value Техника не найдено часы учитываются только в таблица техника рабочие 
-        				and ctw.analytics_value not in ('5195e3a3-66ff-11ec-a16c-00224dda35d0', 'e9ddfb4c-5be7-11ec-a16c-00224dda35d0'))
+            -- выбираем ненормируемые работы и ненормативные ресурсы на нормируемых
+            -- работах
+            not exists (
+                select 1
+                from {{ source("1c", "1_c__norm_workload") }} as nwd
+                where
+                    nwd.work_id = ctw.work_id
+                    and nwd.analytics_value = ctw.analytics_value
+                    -- analytics_value Техника не найдено часы учитываются только в
+                    -- таблица техника рабочие
+                    and ctw.analytics_value not in (
+                        '5195e3a3-66ff-11ec-a16c-00224dda35d0',
+                        'e9ddfb4c-5be7-11ec-a16c-00224dda35d0'
+                    )
+            )
             -- фильтр ниже убирает удаленные и непроведенные ЖУФВР-ы
             and (czh.delete_flag is false and czh.is_done is true)
             and don.spider_name is not null
@@ -57,16 +66,36 @@ with
             cw.enrp_type as "Тип ЕНРП",
             cnw.res_spider_name as "Ресурс Spider",
             cnw.res_spider_code as "Код ресурса",
-			case 
-				-- отнять разницу часов на основном рабочем на укладке а/б
-				when sum(cnw.fact_workload) over (partition by cnw."work_id", cnw."analytics_value") > (ctw1.hours + 1) 
-					and row_number () over (partition by cnw."work_id", cnw."analytics_value" order by cnw.res_spider_code desc) = 1 
-					and cnw.res_spider_code = 'Mont'
-				then cnw.fact_workload - (sum(cnw.fact_workload) over (partition by cnw."work_id", cnw."analytics_value") - ctw1.hours)
-				-- присвоить 0 часов для !Техника НАЕМНАЯ (НЕ НАЙДЕНА), потому что их часы учтены в вехней части union all 
-				when cnw."analytics_value" in ('5195e3a3-66ff-11ec-a16c-00224dda35d0', 'e9ddfb4c-5be7-11ec-a16c-00224dda35d0') then 0 
-				else cnw.fact_workload 
-			end as "Фактическая трудоемкость", 
+            case
+                -- отнять разницу часов на основном рабочем на укладке а/б
+                when
+                    sum(cnw.fact_workload) over (
+                        partition by cnw."work_id", cnw."analytics_value"
+                    )
+                    > (ctw1.hours + 1)
+                    and row_number() over (
+                        partition by cnw."work_id", cnw."analytics_value"
+                        order by cnw.res_spider_code desc
+                    )
+                    = 1
+                    and cnw.res_spider_code = 'Mont'
+                then
+                    cnw.fact_workload - (
+                        sum(cnw.fact_workload) over (
+                            partition by cnw."work_id", cnw."analytics_value"
+                        )
+                        - ctw1.hours
+                    )
+                -- присвоить 0 часов для !Техника НАЕМНАЯ (НЕ НАЙДЕНА), потому что их
+                -- часы учтены в вехней части union all
+                when
+                    cnw."analytics_value" in (
+                        '5195e3a3-66ff-11ec-a16c-00224dda35d0',
+                        'e9ddfb4c-5be7-11ec-a16c-00224dda35d0'
+                    )
+                then 0
+                else cnw.fact_workload
+            end as "Фактическая трудоемкость",
             cnw.norm_workload as "Нормативная трудоемкость",
             true::boolean as "Нормируемая",
             case
@@ -78,9 +107,10 @@ with
 
         from {{ source("1c", "1_c__norm_workload") }} as cnw
         inner join {{ source("1c", "1_c__works") }} as cw on cnw.work_id = cw.work_id
-        left join oup."1c"."1_c__technique_workers" as ctw1 
-        	on cnw.work_id = ctw1.work_id and 
-        	cnw.analytics_value = ctw1.analytics_value
+        left join
+            oup."1c"."1_c__technique_workers" as ctw1
+            on cnw.work_id = ctw1.work_id
+            and cnw.analytics_value = ctw1.analytics_value
         left join {{ source("1c", "1_c__zhufvr") }} as czh on cw.zhufvr_id = czh.link
         left join
             {{ source("dicts", "dict__1c_objects_to_spider") }} as don
@@ -110,7 +140,12 @@ select  -- noqa: ST06
     extract(month from czh.zhfvr_date)::int as "Месяц",
     abs(
         round(
-            (t1."Фактическая трудоемкость" / t1."Нормативная трудоемкость" * 100 - 100),
+            (
+                t1."Фактическая трудоемкость"
+                / nullif(t1."Нормативная трудоемкость", 0)
+                * 100
+                - 100
+            ),  --
             2
         )
     ) as "Недопустимый % отклонения",

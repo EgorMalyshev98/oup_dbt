@@ -254,5 +254,4 @@ with recursive
 {# оставляем только ключевые значения #}
 select *
 from final
-where
-    ("ZATRATY" is not null or "PRIBYL" is not null or "SMRFull" is not null)
+where ("ZATRATY" is not null or "PRIBYL" is not null or "SMRFull" is not null)
