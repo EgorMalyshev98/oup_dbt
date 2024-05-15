@@ -108,12 +108,18 @@ select  -- noqa: ST06
     czh.work_shift_name as "Смена",
     extract(year from czh.zhfvr_date)::int as "Год",
     extract(month from czh.zhfvr_date)::int as "Месяц",
-    abs(
+    -- временная мера! нужно потом убрать
+    -- выражение <case> необходимо для избежания ошибки <division by zero> (деление на ноль) 
+        case 
+        when t1."Нормативная трудоемкость" = 0 
+        then null 
+        else abs(
         round(
             (t1."Фактическая трудоемкость" / t1."Нормативная трудоемкость" * 100 - 100),
             2
         )
-    ) as "Недопустимый % отклонения",
+    ) end as "Недопустимый % отклонения",
+    
     not coalesce(skr."rescode" is null, false)::boolean as "Ключевой ресурс"
 {# case 
         when ctw.contragent_name = 'ТРАНССТРОЙМЕХАНИЗАЦИЯ ООО' then 'Собственная'::varchar(11)
