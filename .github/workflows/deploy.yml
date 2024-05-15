@@ -41,10 +41,8 @@ jobs:
       - name: Build modified models
         run: |
           git checkout HEAD^
-          echo $(git rev-parse HEAD)
           dbt compile --target-path ./target/previous_target --profiles-dir ./.dbt/
-          git checkout $(git rev-parse --abbrev-ref HEAD)
-          echo $(git rev-parse HEAD)
+          git checkout -
           dbt compile --profiles-dir ./.dbt/
           dbt build -s "state:modified+" --state ./target/previous_target --profiles-dir ./.dbt/
 
