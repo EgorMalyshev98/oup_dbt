@@ -3,6 +3,7 @@
 with
     t1 as (
         -- 1 шаг Ненормируемые работы из таблицы '1_c__technique_workers'
+        -- тест github actions
         select
             don.spider_name as "object",
             -- cw.zhufvr_id,
