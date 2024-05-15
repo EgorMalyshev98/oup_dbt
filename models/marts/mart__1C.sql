@@ -59,7 +59,6 @@ with
 
         -- 2 шаг Нормируемые работы из таблицы '1_c__norm_workload'
         select
-            -- тест actions
             don.spider_name as "object",
             -- cw.zhufvr_id,                    
             cnw.work_id,
