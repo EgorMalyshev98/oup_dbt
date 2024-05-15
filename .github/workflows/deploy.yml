@@ -44,53 +44,35 @@ jobs:
           dbt compile --target-path ./target/previous_target --profiles-dir ./.dbt/
           git checkout $(git rev-parse --abbrev-ref HEAD)
           dbt compile --profiles-dir ./.dbt/
-          DBT_LS_OUTPUT=$(dbt ls -s "state:modified+" --state ./target/previous_target --profiles-dir ./.dbt/)
-          
-          if [[ $DBT_LS_OUTPUT != *"No nodes selected!"* ]]; then
-            echo $DBT_LS_OUTPUT
-            dbt build -s "state:modified+" --state ./target/previous_target --profiles-dir ./.dbt/
-            echo "{IS_MODIFIED}={true}" >> $GITHUB_OUTPUT
-          else
-            echo "Skipping deploy job as no nodes selected."
-            echo "{IS_MODIFIED}={false}" >> $GITHUB_OUTPUT
-          fi
-          
-      
-      # - name: Build
-      #   run: dbt build --profiles-dir ./.dbt/
-      
+          dbt build -s "state:modified+" --state ./target/previous_target --profiles-dir ./.dbt/
 
   deploy-airflow-dag:
     runs-on: ubuntu-latest
     needs: [build-dbt-project]
-    if: ${{ vars.IS_MODIFIED }}
   
     steps:
-        - name: debug
-          run: |
-            echo "RUN DEPLOY"
 
-  #     - name: update submodule and compile dbt project
-  #       uses: appleboy/ssh-action@v1.0.3
-  #       env:
-  #          DBT_USER: ${{secrets.DBT_USER}}
-  #          DBT_ENV_SECRET_PASS: ${{secrets.DBT_ENV_SECRET_PASS}}
-  #          DWH_NAME: ${{secrets.DWH_NAME}}
-  #          DWH_PORT: ${{secrets.DWH_PORT}}
-  #          DWH_HOST: ${{secrets.DWH_HOST}}
+      - name: update submodule and compile dbt project
+        uses: appleboy/ssh-action@v1.0.3
+        env:
+           DBT_USER: ${{secrets.DBT_USER}}
+           DBT_ENV_SECRET_PASS: ${{secrets.DBT_ENV_SECRET_PASS}}
+           DWH_NAME: ${{secrets.DWH_NAME}}
+           DWH_PORT: ${{secrets.DWH_PORT}}
+           DWH_HOST: ${{secrets.DWH_HOST}}
            
-  #       with:
-  #         host: ${{ secrets.OUP_IP }}
-  #         username: odmin
-  #         key: ${{ secrets.OUP_SSH_PRIVATE_KEY }}
-  #         port: ${{ secrets.OUP_SSH_PORT }}
-  #         script_stop: true
-  #         envs: DBT_user, DBT_ENV_SECRET_PASS, DWH_NAME, DWH_PORT, DWH_HOST
-  #         script: |
-  #           source $PWD/oup-analytics/airflow/venv/bin/activate
-  #           cd $PWD/oup-analytics/airflow/
-  #           git submodule update --recursive --remote
-  #           cd ./dags/oup_dbt
-  #           dbt compile --profiles-dir ./.dbt/
+        with:
+          host: ${{ secrets.OUP_IP }}
+          username: odmin
+          key: ${{ secrets.OUP_SSH_PRIVATE_KEY }}
+          port: ${{ secrets.OUP_SSH_PORT }}
+          script_stop: true
+          envs: DBT_user, DBT_ENV_SECRET_PASS, DWH_NAME, DWH_PORT, DWH_HOST
+          script: |
+            source $PWD/oup-analytics/airflow/venv/bin/activate
+            cd $PWD/oup-analytics/airflow/
+            git submodule update --recursive --remote
+            cd ./dags/oup_dbt
+            dbt compile --profiles-dir ./.dbt/
 
         
