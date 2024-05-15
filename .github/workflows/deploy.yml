@@ -50,7 +50,8 @@ jobs:
           echo "CHEKOUT HEAD"
           dbt compile --profiles-dir ./.dbt/
           echo "CURRENT COMMIT COMPILED"
-          echo $(dbt ls -s "state:modified+" --state ./target/previous_target)
+          echo ls -l
+          echo ls -l ./target/
       
       # - name: Build
       #   run: dbt build --profiles-dir ./.dbt/
