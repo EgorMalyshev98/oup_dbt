@@ -1,98 +1,111 @@
 {# 
-    Проверка дублирования операций из-за дублирования контрактных номеров в ВДЦ
+    Проверка дублирования операций из-за дублирования контрактных номеров в ВДЦ 
  #}
-with
-    t1 as (
-        select
-            pln."Code",  -- noqa
-            mgabm.code,  -- noqa
-            {# coalesce("c_pln_SMRSsI", 0) as smr_ss_pln, #}
-            {# coalesce("c_pln_SMRSpI", 0) as smr_sp_pln, #}
-            coalesce("c_pln_SMRSsI", 0) + coalesce("c_pln_SMRSpI", 0) as smr_full_pln,
-            {# sum(coalesce(mgabm.smr_ss, 0)),  -- noqa #}
-            {# sum(coalesce(mgabm.smr_sp, 0)),  -- noqa #}
-            sum(coalesce(mgabm.smr_sp, 0))  -- noqa
-            + sum(coalesce(mgabm.smr_ss, 0)) as smr_full_mart
-        from {{ source("spider", "raw_spider__gandoper") }} as pln
-
-        inner join
-            {{ ref("mart__gant_archive_by_month") }} as mgabm on pln."Code" = mgabm.code
-
-        where pln.project_type = 'проект' and mgabm.smr_type = 'план'
-
-        group by mgabm.code, "Code", "c_pln_SMRSsI", "c_pln_SMRSpI"
-    ),
-
-    final_pln as (
-        select *, smr_full_pln - smr_full_mart as delta
-        from t1
-        where
-            (smr_full_pln != 0 or smr_full_mart != 0)
-            and (smr_full_pln - smr_full_mart != 0)
-    ),
-
-    fnl as (
-        select *, abs(delta) from final_pln where abs(delta) > 1 order by delta, "Code"  -- noqa
-    ),
-
-    t1f as (
-        select
-            fct."OperCode",
-            {# sum(coalesce("c_aac_SMRSsI", 0)) as smr_ss_fct, #}
-            {# sum(coalesce("c_aac_SMRSpI", 0)) as smr_sp_fct, #}
-            sum(coalesce(fct."c_aac_SMRSsI", 0))
-            + sum(coalesce(fct."c_aac_SMRSpI", 0)) as smr_full_fct
-        from {{ source("spider", "raw_spider__archive") }} as fct
-
-        where fct.project_type = 'проект' and fct."ResCode" is null
-
-        group by fct."OperCode"
-    ),
-
-    fnlf as (
-        select
-            t1f."OperCode",
-            mgabm.code,
-            {# t1f.smr_ss_fct, #}
-            {# t1f.smr_sp_fct, #}
-            t1f.smr_full_fct,
-            {# sum(coalesce(mgabm.smr_ss, 0)),  -- noqa #}
-            {# sum(coalesce(mgabm.smr_sp, 0)),  -- noqa #}
-            sum(coalesce(mgabm.smr_sp, 0))  -- noqa
-            + sum(coalesce(mgabm.smr_ss, 0)) as smr_full_mart,
-            t1f.smr_full_fct
-            - (sum(coalesce(mgabm.smr_sp, 0)) + sum(coalesce(mgabm.smr_ss, 0)))
-            /* smr_full_mart */
-            as delta
-
-        from t1f
-        inner join
-            "oup"."public"."mart__gant_archive_by_month" as mgabm
-            on t1f."OperCode" = mgabm.code
-        where mgabm.smr_type = 'факт'
-        group by
-            t1f."OperCode",
-            mgabm.code,
-            {# t1f.smr_ss_fct, #}
-            {# t1f.smr_sp_fct, #}
-            t1f.smr_full_fct
-        having
-            (
-                (
-                    t1f.smr_full_fct
-                    - (sum(coalesce(mgabm.smr_sp, 0)) + sum(coalesce(mgabm.smr_ss, 0)))
-                )
-            )
-            not between -1
-            and 1
-    )
-
+with 
+-- план 
+	t1 as (
+	select 
+		pln1."Code", 
+--		pln1.smr_full_pln, 
+--		mgabm1.smr_full_mart, 
+		abs(
+			pln1.smr_full_pln - mgabm1.smr_full_mart 
+		) as delta 
+	from (
+		select 
+			pln."object", 
+			pln."Code", 
+			sum(
+				coalesce(pln."c_pln_SMRSsI", 0) + coalesce(pln."c_pln_SMRSpI", 0)
+				) as smr_full_pln 
+		from  {{ source("spider", "raw_spider__gandoper") }} as pln
+        -- "oup"."spider"."raw_spider__gandoper" as pln 
+		where 
+			pln.project_type = 'проект' 
+			and (pln."c_pln_SMRSsI" is not null or pln."c_pln_SMRSpI" is not null) 
+		group by 
+			pln."object", 
+			pln."Code"
+		) as pln1 -- группировка 
+	inner join (
+		select 
+			mgabm."object",
+			mgabm."code",
+			sum(
+				coalesce(mgabm.smr_sp, 0) 
+            	+ coalesce(mgabm.smr_ss, 0)
+            	) as smr_full_mart
+		from {{ ref("mart__gant_archive_by_month") }} as mgabm 
+        -- "oup"."public"."mart__gant_archive_by_month" as mgabm 
+		where 
+			mgabm.smr_type = 'план' and 
+			(mgabm.smr_sp is not null or mgabm.smr_ss is not null)  
+		group by 
+			mgabm."object",
+			mgabm."code"
+		) as mgabm1 -- группировка 
+	on pln1."Code" = mgabm1."code" and pln1."object" = mgabm1."object" 
+	where 
+		abs(
+			pln1.smr_full_pln - mgabm1.smr_full_mart 
+		) > 1 
+	), 
+-- факт 
+	t2 as (
+	select 
+		fct1."OperCode", 
+		fct1.smr_full_fct, 
+		mgabm2.smr_full_mart, 
+		abs(
+			fct1.smr_full_fct - mgabm2.smr_full_mart 
+		) as delta 
+	from (
+		select 
+			fct."object", 
+			fct."OperCode", 
+			sum(
+				coalesce(fct."c_aac_SMRSsI", 0) + coalesce(fct."c_aac_SMRSpI", 0)
+				) as smr_full_fct 
+		from {{ source("spider", "raw_spider__archive") }} as fct 
+        -- "oup"."spider"."raw_spider__archive" as fct 
+		where 
+			fct.project_type = 'проект' 
+			and fct."ResCode" is null
+			and (fct."c_aac_SMRSsI" is not null or fct."c_aac_SMRSpI" is not null) 
+		group by 
+			fct."object", 
+			fct."OperCode"
+		) as fct1 -- группировка 
+	inner join (
+		select 
+			mgabm."object",
+			mgabm."code",
+			sum(
+				coalesce(mgabm.smr_sp, 0) 
+            	+ coalesce(mgabm.smr_ss, 0)
+            	) as smr_full_mart
+		from {{ ref("mart__gant_archive_by_month") }} as mgabm 
+        -- "oup"."public"."mart__gant_archive_by_month" as mgabm 
+		where 
+			mgabm.smr_type = 'факт' and 
+			(mgabm.smr_sp is not null or mgabm.smr_ss is not null)  
+		group by 
+			mgabm."object",
+			mgabm."code"
+		) as mgabm2 -- группировка 
+	on fct1."OperCode" = mgabm2."code" and fct1."object" = mgabm2."object" 
+	where 
+		abs(
+			fct1.smr_full_fct - mgabm2.smr_full_mart 
+		) > 1 
+	) 
+-- итог 
 select count(*)
-from fnl
+from t1
 having count(*) > 0
-
+--
 union
-
+--
 select count(*)
-from fnlf
-having count(*) > 0
+from t2
+having count(*) > 0 
