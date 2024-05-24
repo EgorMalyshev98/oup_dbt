@@ -118,8 +118,65 @@ with
         -- фильтр ниже убирает удаленные и непроведенные ЖУФВР-ы
         where
             (czh.delete_flag is false and czh.is_done is true)
-            and don.spider_name is not null
+            and don.spider_name is not null 
+            -- исключить нормируемые работы с нулевыми фактическими часами из таблицы 
+            -- Нормативаня трудоемкость 
+            and cnw.fact_workload != 0 
 
+        union all
+
+        -- 3 шаг Нормируемы работы с нулевыми фактическими часами 
+
+        select
+            don.spider_name as "object",
+            -- cw.zhufvr_id,
+            ctw.work_id,
+            cw.type_work_name as "Вид работ",
+            cw.enrp_type as "Тип ЕНРП",
+            ctw.res_name as "Ресурс Spider",
+            ctw.res_code as "Код ресурса",
+            ctw.hours as "Фактическая трудоемкость",
+            case
+                when ctw.hours != 0 then ctw.hours else 0
+            end as "Нормативная трудоемкость",
+            true::boolean as "Нормируемая",
+            case
+                when ctw.contragent_name = 'ТРАНССТРОЙМЕХАНИЗАЦИЯ ООО'
+                then 'Собственная'::varchar(11)
+                when ctw.contragent_name != 'ТРАНССТРОЙМЕХАНИЗАЦИЯ ООО'
+                then 'Наемная'::varchar(11)
+                when ctw.analytics_name like '(НТ)%'
+                then 'Наемная'::varchar(11)
+                when ctw.analytics_name not like '(НТ)%'
+                then 'Собственная'::varchar(11)
+            end as "Ресурс"
+
+        from {{ source("1c", "1_c__technique_workers") }} as ctw
+        inner join {{ source("1c", "1_c__works") }} as cw on ctw.work_id = cw.work_id
+        left join {{ source("1c", "1_c__zhufvr") }} as czh on cw.zhufvr_id = czh.link
+        left join
+            {{ source("dicts", "dict__1c_objects_to_spider") }} as don
+            on czh.territory_value = don.territory_value
+        where
+            -- выбираем нормируемые работы с нулевыми часами из таблицы 
+            -- НормативнаяТрудоемкость 
+            exists (
+                select 1
+                from {{ source("1c", "1_c__norm_workload") }} as nwd
+                where
+                    nwd.work_id = ctw.work_id
+                    and nwd.analytics_value = ctw.analytics_value
+                    -- analytics_value Техника не найдена часы учитываются только в
+                    -- таблице техника рабочие
+                    and ctw.analytics_value not in (
+                        '5195e3a3-66ff-11ec-a16c-00224dda35d0',
+                        'e9ddfb4c-5be7-11ec-a16c-00224dda35d0'
+                    )
+                    and nwd.fact_workload = 0 
+            )
+            -- фильтр ниже убирает удаленные и непроведенные ЖУФВР-ы
+            and (czh.delete_flag is false and czh.is_done is true)
+            and don.spider_name is not null
     )
 
 select  -- noqa: ST06
