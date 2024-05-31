@@ -130,8 +130,15 @@ select  -- noqa: ST06
         )::numeric,
         2
     ) as ownworkload_1c,
+    round(
+        sum(
+            case when t1."Ресурс" = 'Наемная' then t1."Фактическая трудоемкость" end
+        )::numeric,
+        2
+    ) as ntworkload_1c,
     round(avg(table1."FullWorkLoadFact")::numeric, 2) as fullworkload_spider,
     round(avg(table1."WorkLoadFact")::numeric, 2) as ownworkload_spider,
+    round(avg(table1."NT_WorkLoadFact")::numeric, 2) as ntworkload_spider,
     round(
         sum(
             case
@@ -197,9 +204,9 @@ select  -- noqa: ST06
     	else null 
     end)  -
     avg(rsg."c_act_FnOpTr")) ::numeric, 2) as delta_fot--,*/
-    round(avg(rsg."c_act_FnOpTr")::numeric, 2) as fot_spider
+    round(avg(rsg."c_act_FnOpTr")::numeric, 2) as fot_spider,
 -- затраты
-/*    round(sum(case 
+    round(sum(case 
 	    when t1."Ресурс" = 'Собственная' then t1."Фактическая трудоемкость" 
 	    * (coalesce (fot."fot", 0) * coalesce(dske."Kol_Ekip", 1) 
 	    + coalesce (mim."leasing", 0) 
@@ -223,7 +230,7 @@ select  -- noqa: ST06
     + coalesce (avg(rsg."c_act_RepMiM") , 0) 
     + coalesce (avg(rsg."c_act_FuelMiM") , 0) 
     + coalesce (avg(rsg."c_act_FnOpTr") , 0)) ::numeric, 2) as delta_zatraty
-*/
+
 from t1
 -- соединение с таблицей 1с работы
 left join {{ source("1c", "1_c__works") }} as cw on t1.work_id = cw.work_id
@@ -254,6 +261,11 @@ left join
                     when rsa."ResCode" not like 'NT_%' then rsa."WorkLoadFact" else 0
                 end
             ) as "WorkLoadFact",
+            sum(
+                case
+                    when rsa."ResCode" like 'NT_%' then rsa."WorkLoadFact" else 0
+                end
+            ) as "NT_WorkLoadFact",
             sum(
                 coalesce(rsa."c_aac_AmLiz", 0)
                 + coalesce(rsa."c_aac_RepMiM", 0)
