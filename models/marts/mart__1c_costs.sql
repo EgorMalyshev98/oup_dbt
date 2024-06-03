@@ -293,14 +293,14 @@ where
     -- выбор периода
     and rsg."Start" >= '2023-01-01 00:00:00'
     and rsg."Fin" <= '2024-01-01 00:00:00'
-    -- фильтр: турдоемкость операции = сумма трудоемксоти ресурсов 
-    and round(table1."zatraty" / 50) = round(
-        (
-            coalesce(rsg."c_act_AmLiz", 0)
-            + coalesce(rsg."c_act_RepMiM", 0)
-            + coalesce(rsg."c_act_FuelMiM", 0)
-            + coalesce(rsg."c_act_FnOpTr", 0)
-        )
-        / 50
-    )
+    -- фильтр: затраты операции = сумма затрат ресурсов 
+--    and round(table1."zatraty" / 50) = round(
+--        (
+--            coalesce(rsg."c_act_AmLiz", 0)
+--            + coalesce(rsg."c_act_RepMiM", 0)
+--            + coalesce(rsg."c_act_FuelMiM", 0)
+--            + coalesce(rsg."c_act_FnOpTr", 0)
+--        )
+--        / 50
+--    )
 group by cw.structure_unique_code, rsg."Name"
