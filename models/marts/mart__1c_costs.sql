@@ -24,7 +24,8 @@ with tbl1 as (
 		dske."Kol_Ekip",
 		cz.territory_value,
 		cz.zhfvr_date,
-		cw.structure_is_delete
+		cw.structure_is_delete,
+		dcots.spider_name
 	from {{ source('1c', '1_c__technique_workers') }} as ctw 
     --oup."1c"."1_c__technique_workers" ctw 
 	left join {{ source('1c', '1_c__works') }} as cw
@@ -33,6 +34,9 @@ with tbl1 as (
 	left join {{ source('1c', '1_c__zhufvr') }} as cz
     --oup."1c"."1_c__zhufvr" cz 
 	on cw.zhufvr_id = cz.link 
+	left join {{ source('dicts', 'dict__1c_objects_to_spider') }} as dcots
+	--oup.public.dict__1c_objects_to_spider dcots 
+	on cz.territory_value = dcots.territory_value
 	left join {{ source('dicts', 'dict__fot') }} as df
     --oup.public.dict__fot df 
 	on ctw.res_name = df.res 
@@ -43,6 +47,7 @@ with tbl1 as (
 	on ctw.res_name = dm.res 
 		and (cz.zhfvr_date >= dm."start"
 			and cz.zhfvr_date < dm.finish)
+		and dcots.spider_name = dm.object
 	left join {{ source('dicts', 'dict__spider_kol_ekip') }} as dske
     --oup.public.dict__spider_kol_ekip dske 
 	on ctw.res_code = dske."Code" 
@@ -61,7 +66,7 @@ select
 		else null 
 	end) as nt_hours , 	
 	tbl1.structure_unique_code,
-	dcots.spider_name,
+	tbl1.spider_name,
 	sum(case 
 		when tbl1.nt_res = false 
 		then tbl1.hours * tbl1.fot * tbl1."Kol_Ekip" 
@@ -83,9 +88,6 @@ select
 		else null 
 	end) as fuel  
 from tbl1 
-left join {{ source('dicts', 'dict__1c_objects_to_spider') }} as dcots
---oup.public.dict__1c_objects_to_spider dcots 
-on tbl1.territory_value = dcots.territory_value
 where tbl1.structure_unique_code in (
 	select distinct 
 		rsg."f_CodeIdent"
@@ -93,7 +95,7 @@ where tbl1.structure_unique_code in (
     --oup.spider.raw_spider__gandoper rsg 
 	where 
 		rsg.project_type = 'проект'
-		and rsg."object" in ('АД089_М-12_км663-км729_С_(8 этап)')
+		and rsg."object" in ('АД089_М-12_км663-км729_С_(8 этап)', 'АД108_Дюртюли-Ачит')
 		and rsg."Start" >= '2022-01-01 00:00:00'
 		and rsg."Fin" <= '2024-01-01 00:00:00'
 		and rsg."WorkLoadFact" is not null)
@@ -113,7 +115,7 @@ where tbl1.structure_unique_code in (
 	and tbl1.zhfvr_date < '2022-11-01 00:00:00')
 group by 
 	tbl1.structure_unique_code,
-	dcots.spider_name
+	tbl1.spider_name
 )
 select 
 	tbl2.spider_name as "object",
